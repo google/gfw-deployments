@@ -1,0 +1,20 @@
+# This is a sample list of Google Apps domains. 
+# It is NOT a comprehensive list of hostnames for accessing Google Apps. 
+
+mail.google.com
+chatenabled.mail.google.com
+www.google.com
+calendar.google.com
+docs.google.com
+spreadsheets.google.com
+ajax.googleapis.com
+blob-s-docs.googlegroups.com
+chart.apis.google.com
+sites.google.com
+groups.google.com
+video.google.com
+ssl.google-analytics.com
+gg.google.com
+ssl.gstatic.com
+feedserver-enterprise.googleusercontent.com
+gmodules.com

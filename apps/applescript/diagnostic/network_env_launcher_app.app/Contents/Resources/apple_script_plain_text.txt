@@ -1,0 +1,8 @@
+set theAnswer to display dialog "Choosing Continue will run the Network Environment Test Script." buttons {"Continue", "Cancel"} default button 1
+set pathToScript to (path to me as string) & "Contents:Resources:Scripts:network_env.sh"
+if theAnswer = {button returned:"Continue"} then
+  tell application "Terminal"
+    activate
+    do script "/usr/bin/bash " & quoted form of (POSIX path of (pathToScript))
+  end tell
+end if

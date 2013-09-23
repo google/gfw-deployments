@@ -1,0 +1,85 @@
+GANT 
+
+INTODUCTION
+
+Google Apps Network Tests (GANT) is a Python based tool converted into a Windows
+executable that will perform DNS resolution, HTTP connection, and Web based 
+logon tests to Google Apps services. 
+
+GANT is a command line tool that allows Google Apps Partners and solution
+providers to gather DNS resolution and HTTP connection test results into a text
+file or a Google Spreadsheet. Ideally this tool should be run before the 
+Deployment Planning Workshop as part of the environment discovery process. The 
+results should be attached to the Network Environment section in the Google Apps
+Deployment Checklist. The GANT test result set includes DNS response times, Time
+To Live (TTL) values, and HTTP response codes to help bring attention to possible 
+issues that a customer device may have such as slow DNS lookups or inability to
+connect reliably to Google Apps services. 
+
+
+REQUIREMENTS
+
+Windows 7 32 bit or Windows XP 32 bit
+Microsoft Visual C++ 2008 Redistributable Package (x86)
+Chrome Driver - http://code.google.com/p/selenium/wiki/ChromeDriver
+Chrome Browser (version 14.x+)
+
+
+INSTALLATION
+
+Save executables gant.exe and chromedriver.exe in the same folder. 
+
+
+HOME PAGE
+
+For the latest in releases, documentation, and information, visit the
+source page at
+
+     https://code.google.com/p/apps-deployments/source/browse/trunk/utils/gant/gant.exe
+
+
+DOCUMENTATION
+
+Documentation is sparse at the moment.  
+
+USAGE
+
+ 1) Fetch GoogleAppsDomains.txt from https://code.google.com/p/apps-deployments/source/browse/trunk/utils
+    and output test results to a CSV file.  
+    gant.exe -u -o somefile.csv
+
+ 2) Write output to Google Spreadsheet
+ gant.exe -u -e user@domain.com -p somepassword -k google_spreadsheet_key
+
+
+ 3) Run login test using Chrome webdriver and write output to Google Spreadsheet.  
+gant.exe -u -b Chrome -e apps@domain.com -p password -k SPREADSHEET_KEY 
+
+Note:  To write output to a Google Spreadsheet you will need to copy the following spreadsheet into your Google Docs list. 
+GANT Google Spreadsheet report template:
+https://docs.google.com/spreadsheet/ccc?key=0AuXlW9k16eGMdDVzTm5zYnJwemwwbDJWS3BVSFRGTXc&hl=en_US
+
+
+
+Options:
+  --version              show program's version number and exit
+  -h, --help             show this help message and exit
+  -u                     Fetch hosted file containing domains to query
+  -v                     Enable verbose logging to console
+  -i DOMAINS_FILE        Input file to read domains to query
+  -o OUTPUT_FILENAME     The output file to write dns query results to
+  -e EMAIL               The Google Apps email to use for authentication
+  -p PASSWORD            The Google Apps user's password
+  -k SPREADSHEETKEY      The Google Spreadsheet key
+  -b Chrome              The browser webdriver calls 'Chrome'
+  -l LOG_FILE            The log file name
+  -d DEBUG               Set logging level to debug
+
+
+BUG REPORTS
+
+Bug reports may be sent to aluong@google.com
+
+MAILING LISTS
+
+None.

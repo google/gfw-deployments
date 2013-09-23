@@ -1,0 +1,30 @@
+# Sample list of wildcarded top-level domains for Google Apps. 
+#
+###########################################################################
+# DISCLAIMER:
+#
+# This list comes with no guarantee of completeness and may be subject to change
+# at any time.
+#
+# (i) GOOGLE INC. ("GOOGLE") PROVIDES YOU ALL CODE HEREIN "AS IS" WITHOUT ANY
+# WARRANTIES OF ANY KIND, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE, INCLUDING,
+# WITHOUT LIMITATION, ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NON-INFRINGEMENT; AND
+#
+# (ii) IN NO EVENT WILL GOOGLE BE LIABLE FOR ANY LOST REVENUES, PROFIT OR DATA,
+# OR ANY DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE
+# DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, EVEN IF
+# GOOGLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, ARISING OUT OF
+# THE USE OR INABILITY TO USE, MODIFICATION OR DISTRIBUTION OF THIS CODE OR ITS
+# DERIVATIVES.
+###########################################################################
+*doubleclick.net*
+*gmail.com*
+*google-analytics.com*
+*google.com*
+*googleadservices.com*
+*googleapis.com*
+*googleusercontent.com*
+*gstatic.com*
+*ggpht.com*
+*ytimg.com*

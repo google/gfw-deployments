@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<Module>
+  <ModulePrefs title="Example Help Desk Gadget"
+        author="User"
+        author_email="user@domain.com"
+  /> 
+  <Content type="html" >
+     <![CDATA[ 
+     <ul>
+     <li><a href="http://www.google.com" target="_blank">Help Site</a>
+     <li><a href="http://www.google.com" target="_blank">Open a Ticket</a>
+     <li><a href="mailto:http://www.google.com">Email Support</a>
+     </ul>
+     ]]>
+  </Content> 
+</Module>

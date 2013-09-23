@@ -1,0 +1,30 @@
+# Copyright 2010 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# ###########################################################################
+# DISCLAIMER:
+#
+# (i) GOOGLE INC. ("GOOGLE") PROVIDES YOU ALL CODE HEREIN "AS IS" WITHOUT ANY
+# WARRANTIES OF ANY KIND, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE, INCLUDING,
+# WITHOUT LIMITATION, ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NON-INFRINGEMENT; AND
+#
+# (ii) IN NO EVENT WILL GOOGLE BE LIABLE FOR ANY LOST REVENUES, PROFIT OR
+# DATA, OR ANY DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR
+# PUNITIVE DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY,
+# EVEN IF GOOGLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, ARISING
+# OUT OF THE USE OR INABILITY TO USE, MODIFICATION OR DISTRIBUTION OF THIS
+# CODE OR ITS DERIVATIVES.
+#
+
+Usage:
+
+1. Download the zip file containing the Application 'network_env_launcher_app.app'
+2. Extract the zip file to the users Desktop
+3. Double-click the 'network_env_launcher_app.app' folder and select 'Continue'
+4. Collect the log file on the desktop

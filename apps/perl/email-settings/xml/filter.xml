@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom" xmlns:apps="http://schemas.google.com/apps/2006">
+    <apps:property name="doesNotHaveTheWord" value="X_USERNAME_X@X_DOMAIN_X" />
+    <apps:property name="label" value="DO NOT REPLY ALL" />
+</atom:entry>

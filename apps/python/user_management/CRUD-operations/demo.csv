@@ -1,0 +1,7 @@
+"action","user_name","given_name","family_name","password","ip_whitelisted","suspended","new_user_name","change_pw","pw_hash_function","admin"
+"create","jeff","jeff","stanway","secret_password",TRUE,TRUE,,TRUE,,TRUE
+"create","nedwards","nikki","edwards","09613b137a2e9be2ae93588c5970ab53",FALSE,FALSE,,FALSE,"MD5",FALSE
+"update","jeff","jeffrey","edwards",,,FALSE,,,,FALSE
+"update","nedwards","nicola","edwards",,,,"nicola",,,
+"delete","jeff",,,,,,,,,
+"delete","nicola",,,,,,,,,

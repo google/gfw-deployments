@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<!-- simple elements -->
+<xs:element name="acquisitionDate">
+  <xs:simpleType>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{2}-[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{2}|[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{2}-[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{2}|[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}-[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}|[0-9]{4}:[0-9]{2}:[0-9]{2}-[0-9]{4}:[0-9]{2}:[0-9]{2}|[0-9]{4}:[0-9]{2}-[0-9]{4}:[0-9]{2}|[0-9]{4}-[0-9]{4}|[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{2}|[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{2}|[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}|[0-9]{4}:[0-9]{2}:[0-9]{2}|[0-9]{4}:[0-9]{2}|[0-9]{4}"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:element>
+
+<xs:element name="attribution">
+  <xs:simpleType>
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="256"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:element>
+
+<xs:element name="description" type="xs:string"/>
+<xs:element name="layerName" type="xs:string"/>
+<xs:element name="tags" type="xs:string"/>
+
+<xs:element name="type">
+  <xs:simpleType>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="image"/>
+      <xs:enumeration value="terrain"/>
+      <xs:enumeration value="vector"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:element>
+
+<xs:element name="mosaicName">
+  <xs:simpleType>
+    <xs:restriction base="xs:string">
+      <!-- Allow: a-z, A-Z, 0-9, backward slash (\), period (.), dash (-), underscore (_), space ( ) -->
+      <!-- Prevent: All others, but specifically: dollar sign ($), forward slash (/), curley bracket (}), bracket (]), parentheses ()), etc... -->
+      <xs:pattern value="([a-zA-Z0-9\\.\-_ ]+)"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:element>
+
+<xs:element name="name">
+  <xs:simpleType>
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="256"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:element>
+
+<xs:element name="sidecar" type="xs:string"/>
+
+<xs:element name="sidecars">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="sidecar" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+<!-- complex elements -->
+<xs:element name="maskType">
+  <xs:simpleType>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ALPHA_BAND"/>
+      <xs:enumeration value="AUTO_MASK"/>
+      <xs:enumeration value="MASK_IMAGE"/>
+      <xs:enumeration value="NO_MASK"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:element>
+
+<xs:element name="maskParameters">
+  <xs:complexType>
+    <xs:all>
+      <xs:element ref="maskType"/>
+      <xs:element name="minHolePixelSize" minOccurs="0" type="xs:nonNegativeInteger"/>
+      <xs:element name="featheringPixels" minOccurs="0" type="xs:nonNegativeInteger"/>
+    </xs:all>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="band">
+  <xs:complexType>
+    <xs:all>
+      <xs:element ref="name" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="crs" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="nodata_value" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="indexed" minOccurs="0" maxOccurs="1"/>
+    </xs:all>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="bands">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="band" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="file">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="name" minOccurs="1" maxOccurs="1"/>
+      <xs:element ref="bands" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="fileSpec" abstract="true" />
+<xs:element name="filename" type="xs:string" substitutionGroup="fileSpec"/>
+<xs:element name="files" substitutionGroup="fileSpec">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="file" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="assetlist">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="asset" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:unique name="testUniqueFilename">
+    <xs:selector xpath="asset" />
+    <xs:field xpath="filename" />
+  </xs:unique>
+</xs:element>
+
+<xs:element name="asset">
+    <xs:complexType>
+      <xs:all>
+        <xs:element ref="acquisitionDate"/>
+        <xs:element ref="attribution"/>
+        <xs:element ref="description" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="fileSpec" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="layerName" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="maskParameters" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="mosaicName" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="name"/>
+        <xs:element ref="tags" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="type"/>
+        <xs:element ref="sidecars" minOccurs="0" maxOccurs="1"/>
+      </xs:all>
+    </xs:complexType>
+</xs:element>
+
+</xs:schema>
