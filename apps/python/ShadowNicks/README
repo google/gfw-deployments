@@ -1,0 +1,2 @@
+You must create an OAuth2 project with the Apps Directory API enabled.
+Download the client_secrets.json file and place it in this directory.
