@@ -1,2 +1,5 @@
 .svn
 *.pyc
+.idea
+auth.dat
+client_secrets.json
