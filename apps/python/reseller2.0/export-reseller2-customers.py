@@ -32,7 +32,8 @@ __author__ = 'richieforeman@google.com (Richie Foreman)'
       (https://code.google.com/p/gdata-python-client/)
 
     Usage:
-    - python export-reseller2-customers.py --admin admin@reseller.acmecorp.com --password <password> --domain reseller.acmecorp.com --out mycustomers.csv
+    - python export-reseller2-customers.py --admin admin@reseller.acmecorp.com
+      --password <password> --domain reseller.acmecorp.com --out mycustomers.csv
 """
 
 from argparse import ArgumentParser
@@ -93,7 +94,6 @@ class Reseller2Client(gdata.client.GDClient):
 
         return self.get_entry(uri=domain_uri, desired_class=gdata.data.GDEntry)
 
-
     def list_domains(self, startDomainName=''):
         '''
         A simple single page list call.
@@ -137,7 +137,7 @@ def main(args):
     writer.writeheader()
 
     for entry in client.get_all_domains():
-        # fetch the domainName off the entry.
+        # pull out the domainName
         domainName = entry._other_elements[1]._other_attributes['value']
         print "Fetching info for %s ..." % domainName
 
@@ -175,13 +175,10 @@ if __name__ == "__main__":
 
     args.add_argument("--admin",
                       help="Administrative user on the reseller domain")
-
     args.add_argument("--password",
                       help="Password for the administrative user")
-
     args.add_argument("--domain",
                       help="Reseller domain (e.g. 'reseller.acmecorp.com')")
-
     args.add_argument("--out",
                       help="Output file for report (e.g. 'out.csv')")
 
