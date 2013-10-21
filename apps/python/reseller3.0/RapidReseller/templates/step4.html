@@ -1,0 +1,16 @@
+
+{% extends "templates/_base.html" %}
+{% block content %}
+<h1>Step 4: Verification Status</h1>
+<p>
+    All Google Apps domains MUST be verified.  Depending upon your capabilities,
+    one of these options may make more sense than the other.
+</p>
+<p>
+    Site Verification Status: {% if verification_status %}OK!{% else %}Error!{% endif %}
+</p>
+<p>Prior to leveraging Google Apps, MX records will need to be created for the domain.</p>
+
+<a href="javascript:location.reload();" class="maia-button">Refresh</a>
+<a href="/step5" class="maia-button">Next &raquo;</a>
+{% endblock %}
