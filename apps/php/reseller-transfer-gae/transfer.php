@@ -75,8 +75,8 @@
     // Each subscription needs a seat count.
     // Ideally this should pull the seat count from the previous domain.
     $seats = new Google_Seats();
-    $seats->setMaximumNumberOfSeats(50);
-    $seats->setNumberOfSeats(50);
+    $seats->setMaximumNumberOfSeats($_POST['maximumNumberOfSeats']);
+    $seats->setNumberOfSeats($_POST['numberOfSeats']);
     $subscription->setSeats($seats);
 
     $service->subscriptions->insert(
