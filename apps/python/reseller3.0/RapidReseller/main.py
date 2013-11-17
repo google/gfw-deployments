@@ -154,7 +154,11 @@ class StepOneHandler(BaseHandler):
             service = build(serviceName="reseller",
                             version=settings.RESELLER_API_VERSION,
                             http=http)
-
+            '''commitmentInterval': {
+                'startTime': int(time.time()),
+                # have the trial end 15 days later.
+                'endTime': int(time.time()) + (86400 * 15)
+            }'''
             response = service.subscriptions().insert(
                 customerId=self.session['domain'],
                 body={
@@ -162,13 +166,9 @@ class StepOneHandler(BaseHandler):
                     'subscriptionId': "%s-apps" % self.session['domain'],
                     'skuId': ResellerSKU.GoogleApps,
                     'plan': {
-                        'planName': ResellerPlanName.Trial,
+                        'planName': ResellerPlanName.Annual,
                         'isCommitmentPlan': False,
-                        'commitmentInterval': {
-                            'startTime': int(time.time()),
-                            # have the trial end 15 days later.
-                            'endTime': int(time.time()) + (86400 * 15)
-                        }
+
                     },
                     'seats': {
                         'numberOfSeats': self.request.get("seats"),
@@ -185,9 +185,15 @@ class StepOneHandler(BaseHandler):
     @wsgi.route("/step3")
     class Step3Handler(BaseHandler):
         def get(self):
+            '''
+            Prompt the user to select a verification method.
+            '''
             return self.render_template("templates/step3.html")
 
         def post(self):
+            '''
+            Call the site verification api and fetch the token value.
+            '''
             credentials = get_credentials(settings.RESELLER_ADMIN)
 
             http = httplib2.Http()
@@ -202,6 +208,7 @@ class StepOneHandler(BaseHandler):
             if verification_method in settings.SITE_VERIFICATION_METHODS:
                 # a "site" type is chosen, the values are a different.
                 verification_type = "SITE"
+                # site verification methods must begin with http or https
                 identifier = "http://%s" % self.session['domain']
 
             # build the site verification service.
@@ -227,6 +234,11 @@ class StepOneHandler(BaseHandler):
     @wsgi.route("/step4")
     class Step4Handler(BaseHandler):
         def get(self):
+            '''
+            Call the site verification service and see if the
+            token has been fulfilled (e.g. a dns entry added)
+            '''
+
             credentials = get_credentials(settings.RESELLER_ADMIN)
 
             http = httplib2.Http()
@@ -268,30 +280,33 @@ class StepOneHandler(BaseHandler):
             return self.render_template("templates/step5.html")
 
         def post(self):
-
-            # establish the credentials.
             credentials = get_credentials(sub=settings.RESELLER_ADMIN)
+
+            username = "admin@%s" % self.session['domain']
+            password = "P@ssw0rd!!"
 
             http = httplib2.Http()
             credentials.authorize(http)
-            # force a refresh so we can pull out the Bearer token.
-            credentials.refresh(http=http)
 
-            client = AppsClient(
-                domain=self.session['domain'],
-                auth_token=OAuth2TokenFromCredentials(credentials))
+            service = build(serviceName="admin",
+                            version="directory_v1",
+                            http=http)
 
-            client.ssl = True
-
-            user = client.CreateUser(user_name="admin",
-                                     given_name="Admin",
-                                     family_name="Admin",
-                                     password="P@ssw0rd!!",
-                                     suspended="false",
-                                     admin="true")
+            service.users().insert(body={
+                'primaryEmail': username,
+                'name': {
+                    'givenName': 'Admin',
+                    'familyName': 'Admin',
+                    'fullName': 'Admin Admin'
+                },
+                'isAdmin': False,
+                'isDelegatedAdmin': False,
+                'suspended': False,
+                'password': password
+            }).execute(num_retries=5)
 
             return self.render_template(
                 "templates/step5_confirm.html",
                 domain=self.session['domain'],
-                username="admin@%s" % self.session['domain'],
-                password="P@ssw0rd!!")
+                username=username,
+                password=password)
