@@ -1,0 +1,15 @@
+
+{% extends "templates/_base.html" %}
+{% block content %}
+<h1>Step 3.5: Verify the Domain</h1>
+<p>
+    The domain will need to be validated using the <b>{{verification_method}}</b> method using the following value:
+</p>
+
+<pre class="maia-notification">
+    {{verification_token}}
+</pre>
+
+<a href="/step4?verification_method={{verification_method}}&verification_type={{verification_type}}&verification_identifier={{verification_identifier}}" class="maia-button">Next &raquo;</a>
+
+{% endblock %}

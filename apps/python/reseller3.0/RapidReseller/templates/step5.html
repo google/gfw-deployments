@@ -1,0 +1,13 @@
+
+{% extends "templates/_base.html" %}
+{% block content %}
+<h1>Step 5: Create a user on the customer account</h1>
+<p>
+    When a Google Apps instance is created, it is instantiated with 0 accounts.
+    Resellers can act on behalf of their resold customers to provision accounts
+    using the Admin SDK.
+</p>
+<form action="/step5" method="POST">
+    <input type="submit" class="maia-button" value="Next &raquo;">
+</form>
+{% endblock %}

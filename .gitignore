@@ -2,4 +2,15 @@
 *.pyc
 .idea
 auth.dat
+# ignore common library folders
+apiclient/
+atom/
+gdata/
+oauth2client/
+httplib2/
+uritemplate/
+# ensure no accidental security leaks
 client_secrets.json
+privatekey.p12
+privatekey.pem
+
