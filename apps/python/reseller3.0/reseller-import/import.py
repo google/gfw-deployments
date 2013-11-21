@@ -87,16 +87,19 @@ VALID_SKUS = [
     "Google-Drive-storage-4TB",
     "Google-Drive-storage-8TB",
     "Google-Drive-storage-16TB",
-    "Google-Vault",
+    "Google-Vault"
 ]
 VALID_PLANNAMES = [
-    'ANNUAL',
+    'ANNUAL_MONTHLY_PAY',
+    'ANNUAL_YEARLY_PAY',
     'FLEXIBLE',
     'TRIAL'
 ]
 VALID_RENEWAL_TYPES = [
-    'AUTO_RENEW',
-    'RENEW_CURRENT_USERS',
+    'AUTO_RENEW_MONTHLY_PAY',
+    'AUTO_RENEW_YEARLY_PAY',
+    'RENEW_CURRENT_USERS_MONTHLY_PAY',
+    'RENEW_CURRENT_USERS_YEARLY_PAY',
     'SWITCH_TO_PAY_AS_YOU_GO',
     'CANCEL'
 ]
