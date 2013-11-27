@@ -158,12 +158,12 @@ def main(args):
         creationTime = domain_entry._other_elements[5]._other_attributes['value']
 
         writer.writerow({
-            'domain': domainName,
+            'domain': domainName.encode('ascii', 'ignore'),
             'token': token,
             'expiry': expiry,
             'edition': edition,
             'maximumNumberOfUsers': maximumNumberOfUsers,
-            'countryCode': countryCode,
+            'countryCode': countryCode.encode('ascii', 'ignore'),
             'creationTime': creationTime,
         })
 
