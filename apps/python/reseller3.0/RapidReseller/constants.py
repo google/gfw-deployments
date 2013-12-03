@@ -21,6 +21,20 @@
 __author__ = 'richieforeman@google.com (Richie Foreman)'
 
 
+class ResellerProduct(object):
+    GoogleApps = "Google-Apps"
+    GoogleDrive = "Google-Drive-storage"
+    GoogleVault = "Google-Vault"
+
+    @classmethod
+    def as_list(cls):
+        return [
+            cls.GoogleApps,
+            cls.GoogleDrive,
+            cls.GoogleVault
+        ]
+
+
 class ResellerSKU(object):
     '''
     A class of constants containing various Enterprise SKUs.
@@ -40,9 +54,33 @@ class ResellerSKU(object):
     GoogleDriveStorage16TB = "Google-Drive-storage-16TB"
     GoogleVault = "Google-Vault"
 
+    @classmethod
+    def as_list(cls):
+        return [
+            cls.GoogleApps,
+            cls.GoogleDriveStorage16TB,
+            cls.GoogleDriveStorage1TB,
+            cls.GoogleDriveStorage200GB,
+            cls.GoogleDriveStorage20GB,
+            cls.GoogleDriveStorage2TB,
+            cls.GoogleDriveStorage400GB,
+            cls.GoogleDriveStorage4TB,
+            cls.GoogleDriveStorage50GB,
+            cls.GoogleDriveStorage8TB,
+            cls.GoogleVault
+        ]
+
+
 class ResellerPlanName(object):
-    # Traditional annual agreement.
-    Annual = "ANNUAL"
+    # As of 11/21/13, this is invalid.
+    # Annual, paid every month
+    #Annual = "ANNUAL"
+
+    # Annual Prepaid for the entire year.
+    AnnualYearly = "ANNUAL_YEARLY_PAY"
+
+    # Annual paid every month.
+    AnnualMonthly = "ANNUAL_MONTHLY_PAY"
 
     # Month-to-Month
     Flexible = "FLEXIBLE"
@@ -50,12 +88,35 @@ class ResellerPlanName(object):
     # 30 Day (max) trial.
     Trial = "TRIAL"
 
+    @classmethod
+    def as_list(cls):
+        return [
+            cls.AnnualYearly,
+            cls.AnnualMonthly,
+            cls.Flexible,
+            cls.Trial
+        ]
+
+class ResellerDeletionType(object):
+    Cancel = "cancel"
+    Downgrade = "downgrade"
+    Suspend = "suspend"
+
 class ResellerRenewalType(object):
     # automatically renew for the same license count.
-    AutoRenew = "AUTO_RENEW"
+    #AutoRenew = "AUTO_RENEW"
 
-    # automatically renew for the current user count (for better or worse)
-    RenewCurrent = "RENEW_CURRENT_USERS"
+    # Auto renew with monthly pay
+    AutoRenewMonthly = "AUTO_RENEW_MONTHLY_PAY"
+
+    # auto renew with yearly pay
+    AutoRenewYearly = "AUTO_RENEW_YEARLY_PAY"
+
+    # renew current users with monthly pay
+    RenewCurrentMonthly = "RENEW_CURRENT_USERS_MONTHLY_PAY"
+
+    # renew current users with yearly pay.
+    RenewCurrentYearly = "RENEW_CURRENT_USERS_YEARLY_PAY"
 
     # at the renewal date, switch to a "FLEXIBLE" plan type,
     # which is billed on a monthly basis.
@@ -63,3 +124,14 @@ class ResellerRenewalType(object):
 
     # at the renewal date, cancel the subscription
     Cancel = "CANCEL"
+
+    @classmethod
+    def as_list(cls):
+        return [
+            cls.AutoRenewMonthly,
+            cls.AutoRenewYearly,
+            cls.RenewCurrentMonthly,
+            cls.RenewCurrentYearly,
+            cls.PayAsYouGo,
+            cls.Cancel
+        ]

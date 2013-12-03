@@ -27,10 +27,11 @@ import logging
 
 from google.appengine.api import users
 import settings
-import template
-
+import jinja2
+import traceback
 import webapp2
 from webapp2_extras import sessions
+
 
 class WSGIApplication(webapp2.WSGIApplication):
 
@@ -43,6 +44,7 @@ class WSGIApplication(webapp2.WSGIApplication):
             return func
 
         return wrapper
+
 
 class BaseHandler(webapp2.RequestHandler):
     def dispatch(self):
@@ -60,10 +62,13 @@ class BaseHandler(webapp2.RequestHandler):
 
     @webapp2.cached_property
     def jinja(self):
-        return template.jinja_environment
+
+        path = os.path.dirname(os.path.realpath(__file__))
+
+        return jinja2.Environment(
+            loader=jinja2.FileSystemLoader(path))
 
     def handle_exception(self, exception, debug):
-        import traceback
         self.response.set_status(500)
         logging.exception(exception)
         return self.render_template("templates/_exception.html",

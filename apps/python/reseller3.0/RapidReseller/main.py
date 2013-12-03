@@ -57,42 +57,22 @@ __author__ = 'richieforeman@google.com (Richie Foreman)'
         https://www.googleapis.com/auth/admin.directory.user
 """
 
-import time
-
+from apiclient.discovery import build
 from app import wsgi
 from app import BaseHandler
 
 from constants import ResellerPlanName
 from constants import ResellerSKU
 from constants import ResellerRenewalType
+from constants import ResellerProduct
 
-import settings
-
-from apiclient.discovery import build
-
-from gdata.apps.client import AppsClient
-from gdata.gauth import OAuth2TokenFromCredentials
+from google.appengine.api import taskqueue
 
 import httplib2
-from oauth2client.client import SignedJwtAssertionCredentials
 
-def get_credentials(sub=None):
-    '''
-    Signed JWT Credentials allow for frictionless authentication
-    using a private key as opposed to a three-legged oauth flow.
-    '''
-    f = file(settings.OAUTH2_PRIVATEKEY)
-    key = f.read()
-    f.close()
-
-    # establish the credentials.
-    credentials = SignedJwtAssertionCredentials(
-        service_account_name=settings.OAUTH2_SERVICE_ACCOUNT_EMAIL,
-        private_key=key,
-        scope=" ".join(settings.OAUTH2_SCOPES),
-        sub=sub)
-
-    return credentials
+import settings
+import time
+from utils import get_credentials
 
 
 @wsgi.route("/")
@@ -100,17 +80,19 @@ class IndexHandler(BaseHandler):
     def get(self):
         return self.render_template("templates/index.html")
 
+
 @wsgi.route("/step1")
 class StepOneHandler(BaseHandler):
     def get(self):
 
         # generate a bogus domain name for demo purposes.
-        domain = "demo-%d.gappslabs.co" % int(time.time())
+        domain = settings.DOMAIN_TEMPLATE % int(time.time())
 
         return self.render_template("templates/step1.html",
                                     domain=domain)
 
     def post(self):
+        domain = self.request.get('domain')
 
         credentials = get_credentials(settings.RESELLER_ADMIN)
 
@@ -122,7 +104,7 @@ class StepOneHandler(BaseHandler):
                         http=http)
 
         response = service.customers().insert(body={
-            'customerDomain': self.request.get("domain"),
+            'customerDomain': domain,
             'alternateEmail': 'nobody@google.com',
             'phoneNumber': '212.565.0000',
             'postalAddress': {
@@ -136,7 +118,16 @@ class StepOneHandler(BaseHandler):
             }
         }).execute(num_retries=5)
 
-        self.session['domain'] = self.request.get('domain')
+        self.session['domain'] = domain
+
+        # Mark the domain for deletion in approx 5 days.
+        taskqueue.add(url="/tasks/cleanup",
+                      name="cleanup__%s" % domain.replace(".", "_"),
+                      countdown=settings.DOMAIN_CLEANUP_TIMER,
+                      params={
+                          'domain': domain
+                      })
+
         return self.redirect("/step2")
 
     @wsgi.route("/step2")
@@ -154,11 +145,7 @@ class StepOneHandler(BaseHandler):
             service = build(serviceName="reseller",
                             version=settings.RESELLER_API_VERSION,
                             http=http)
-            '''commitmentInterval': {
-                'startTime': int(time.time()),
-                # have the trial end 15 days later.
-                'endTime': int(time.time()) + (86400 * 15)
-            }'''
+
             response = service.subscriptions().insert(
                 customerId=self.session['domain'],
                 body={
@@ -166,16 +153,15 @@ class StepOneHandler(BaseHandler):
                     'subscriptionId': "%s-apps" % self.session['domain'],
                     'skuId': ResellerSKU.GoogleApps,
                     'plan': {
-                        'planName': ResellerPlanName.Annual,
+                        'planName': ResellerPlanName.Flexible,
                         'isCommitmentPlan': False,
-
                     },
                     'seats': {
                         'numberOfSeats': self.request.get("seats"),
                         'maximumNumberOfSeats': self.request.get("seats")
                     },
                     'renewalSettings': {
-                        'renewalType': ResellerRenewalType.AutoRenew
+                        'renewalType': ResellerRenewalType.PayAsYouGo
                     },
                     'purchaseOrderId': 'G00gl39001'
                 }).execute(num_retries=5)
@@ -249,7 +235,7 @@ class StepOneHandler(BaseHandler):
                             http=http)
 
             verification_type = self.request.get("verification_type")
-            verification_identifier = self.request.get("verification_identifier")
+            verification_ident = self.request.get("verification_identifier")
             verification_method = self.request.get("verification_method")
 
             verification_status = None
@@ -261,17 +247,17 @@ class StepOneHandler(BaseHandler):
                     body={
                         'site': {
                             'type': verification_type,
-                            'identifier': verification_identifier
+                            'identifier': verification_ident
                         },
                         'verificationMethod': verification_method
                     }
                 ).execute(num_retries=5)
                 verification_status = True
-            except:
+            except Exception, e:
                 verification_status = False
 
             return self.render_template("templates/step4.html",
-                                        verficiation_status=verification_status)
+                                        verification_status=verification_status)
 
     @wsgi.route("/step5")
     class StepFiveHandler(BaseHandler):
@@ -292,6 +278,7 @@ class StepOneHandler(BaseHandler):
                             version="directory_v1",
                             http=http)
 
+            # create the user.
             service.users().insert(body={
                 'primaryEmail': username,
                 'name': {
@@ -299,14 +286,78 @@ class StepOneHandler(BaseHandler):
                     'familyName': 'Admin',
                     'fullName': 'Admin Admin'
                 },
-                'isAdmin': False,
-                'isDelegatedAdmin': False,
+                'isAdmin': True,
                 'suspended': False,
                 'password': password
             }).execute(num_retries=5)
 
-            return self.render_template(
-                "templates/step5_confirm.html",
-                domain=self.session['domain'],
-                username=username,
-                password=password)
+            # make the user a super admin.
+            service.users().makeAdmin(
+                userKey=username,
+                body={
+                    'status': True
+                }).execute(num_retries=5)
+
+            self.session['username'] = username
+
+            return self.render_template("templates/step5_confirm.html",
+                                        domain=self.session['domain'],
+                                        username=username,
+                                        password=password)
+
+    @wsgi.route("/step6")
+    class StepSixHandler(BaseHandler):
+        def get(self):
+            return self.render_template("templates/step6.html")
+
+        def post(self):
+            credentials = get_credentials(sub=settings.RESELLER_ADMIN)
+            http = httplib2.Http()
+
+            credentials.authorize(http)
+
+            service = build(serviceName="reseller",
+                            version=settings.RESELLER_API_VERSION,
+                            http=http)
+
+            response = service.subscriptions().insert(
+                customerId=self.session['domain'],
+                body={
+                    'customerId': self.session['domain'],
+                    'skuId': ResellerSKU.GoogleDriveStorage20GB,
+                    'plan': {
+                        'planName': ResellerPlanName.Flexible
+                    },
+                    'seats': {
+                        'numberOfSeats': 5,
+                        'maximumNumberOfSeats': 5,
+                    },
+                    'purchaseOrderId': 'G00gl39001-d20'
+                }).execute(num_retries=5)
+
+            return self.redirect("/step7")
+
+
+    @wsgi.route("/step7")
+    class StepSevenHandler(BaseHandler):
+        def get(self):
+            return self.render_template("templates/step7.html")
+
+        def post(self):
+            credentials = get_credentials(sub=settings.RESELLER_ADMIN)
+            http = httplib2.Http()
+
+            credentials.authorize(http)
+
+            service = build(serviceName="licensing",
+                            version='v1',
+                            http=http)
+
+            service.licenseAssignments().insert(
+                productId=ResellerProduct.GoogleDrive,
+                skuId=ResellerSKU.GoogleDriveStorage20GB,
+                body={
+                    'userId': 'admin@%s' % self.session['domain']
+                }).execute(num_retries=5)
+
+            return self.render_template("templates/fin.html")
