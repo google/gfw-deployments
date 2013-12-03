@@ -1,4 +1,3 @@
-
 {% extends "templates/_base.html" %}
 {% block content %}
 <h1>Step 5: Create a user on the customer account</h1>
@@ -6,6 +5,10 @@
     When a Google Apps instance is created, it is instantiated with 0 accounts.
     Resellers can act on behalf of their resold customers to provision accounts
     using the Admin SDK.
+</p>
+<p>
+    Important: After creating a user, it is important to use the
+    users.makeAdmin() call to promote the user to an administrator.
 </p>
 <form action="/step5" method="POST">
     <input type="submit" class="maia-button" value="Next &raquo;">
