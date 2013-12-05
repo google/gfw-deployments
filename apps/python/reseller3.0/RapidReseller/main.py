@@ -150,11 +150,9 @@ class StepOneHandler(BaseHandler):
                 customerId=self.session['domain'],
                 body={
                     'customerId': self.session['domain'],
-                    'subscriptionId': "%s-apps" % self.session['domain'],
                     'skuId': ResellerSKU.GoogleApps,
                     'plan': {
                         'planName': ResellerPlanName.Flexible,
-                        'isCommitmentPlan': False,
                     },
                     'seats': {
                         'numberOfSeats': self.request.get("seats"),
