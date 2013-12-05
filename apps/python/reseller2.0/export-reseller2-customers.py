@@ -48,6 +48,7 @@ import gdata.gauth
 DOMAIN_FEED_TEMPLATE = "/a/feeds/reseller/%s/%s/domain"
 TRANSFER_TOKEN_TEMPLATE = "/a/feeds/reseller/%s/%s/domain/%s/transferToken"
 DOMAIN_ENTRY_TEMPLATE = "/a/feeds/reseller/%s/%s/domain/%s"
+SUSPEND_ENTRY_TEMPALTE = "/a/feeds/reseller/%s/%s/domain/%s/suspend"
 
 class Reseller2Client(gdata.client.GDClient):
     host = "apps-apis.google.com"
@@ -107,6 +108,14 @@ class Reseller2Client(gdata.client.GDClient):
         return self.get_entry(uri=domain_uri,
                               desired_class=gdata.data.GDFeed)
 
+    def get_suspend_status(self, domain):
+        suspend_uri = SUSPEND_ENTRY_TEMPALTE % (self.api_version,
+                                                self.domain,
+                                                domain)
+
+        return self.get_entry(uri=suspend_uri,
+                              desired_class=gdata.data.GDEntry)
+
     def get_transfer_token(self, domain):
         '''
         Given a reseller domain, fetch the transfer token.
@@ -132,7 +141,8 @@ def main(args):
                                 'edition',
                                 'maximumNumberOfUsers',
                                 'countryCode',
-                                'creationTime'
+                                'creationTime',
+                                'isSuspended'
                             ])
     writer.writeheader()
 
@@ -151,6 +161,10 @@ def main(args):
         # fetch information about a domain
         domain_entry = client.get_domain(domain=domainName)
 
+        # see if the domain is in a suspended state.
+        suspend_entry = client.get_suspend_status(domainName)
+        isSuspended = suspend_entry._other_elements[1]._other_attributes['value']
+
         # pull out values of interest.
         edition = domain_entry._other_elements[1]._other_attributes['value']
         maximumNumberOfUsers = domain_entry._other_elements[2]._other_attributes['value']
@@ -165,6 +179,7 @@ def main(args):
             'maximumNumberOfUsers': maximumNumberOfUsers,
             'countryCode': countryCode.encode('ascii', 'ignore'),
             'creationTime': creationTime,
+            'isSuspended': isSuspended
         })
 
         # keep the QPS something reasonable.
