@@ -42,6 +42,7 @@ __author__ = 'richieforeman@google.com (Richie Foreman)'
 from argparse import ArgumentParser
 
 from apiclient.discovery import build
+from apiclient.errors import HttpError
 
 import csv
 
@@ -68,10 +69,8 @@ CLIENT_SECRETS = 'client_secrets.json'
 THROTTLE_SLEEP = 1
 REQUIRED_FIELDS = [
     'customerAuthToken',
-    'subscriptionId',
     'skuId',
     'plan.planName',
-    'plan.isCommitmentPlan',
     'renewalSettings.renewalType',
     'seats.numberOfSeats',
     'seats.maximumNumberOfSeats'
@@ -160,20 +159,6 @@ def sanity_check(d):
     if renewalType not in VALID_RENEWAL_TYPES:
         logging.error("%s: '%s' is not a valid renewal type" % (domain, renewalType))
 
-    # check commitment for sanity.
-    commitmentPlan = d.get('plan.isCommitmentPlan')
-    startTime = safeint(d.get('plan.commitmentInterval.startTime'))
-    endTime = safeint(d.get('plan.commitmentInterval.endTime'))
-    if commitmentPlan == "TRUE":
-        if startTime == 0:
-            logging.error("%s: %s a startTime is required" % (domain, startTime))
-
-        if endTime == 0:
-            logging.error("%s: %s an endTime is required" % (domain, endTime))
-
-        if startTime > endTime:
-            logging.error("%s: The commitment must end after it starts" % domain)
-
     # check seat count for sanity
     seats = safeint(d.get('seats.numberOfSeats'))
     maxSeats = safeint(d.get('seats.maximumNumberOfSeats'))
@@ -182,12 +167,56 @@ def sanity_check(d):
     if seats > maxSeats:
         logging.error("%s: Seats cannot be larger than max seats")
 
+def create_customer(service, d):
+    return service.customers().insert(
+        customerAuthToken=d['customerAuthToken'],
+        body={
+            'customerDomain': d['customerDomain'],
+            'customerId': d['customer.customerId'],
+            'alternateEmail': d['customer.alternateEmail'],
+            'phoneNumber': d['customer.phoneNumber'],
+            'postalAddress': {
+                'contactName': d['customer.contactName'],
+                'organizationName': d['customer.organizationName'],
+                'locality': d['customer.locality'],
+                'region': d['customer.region'],
+                'postalCode': d['customer.postalCode'],
+                'countryCode': d['customer.countryCode'],
+                'addressLine1': d['customer.addressLine1'],
+                'addressLine2': d['customer.addressLine2'],
+                'addressLine3': d['customer.addressLine3'],
+            }
+        }
+    )
+
+def create_subscription(service, d):
+    # Add a Google Apps subscription record.
+    return service.subscriptions().insert(
+        customerId=d['customerDomain'],
+        trace=None,
+        customerAuthToken=d['customerAuthToken'],
+        body={
+            'customerId': d['customerDomain'],
+            'skuId': d['skuId'],
+            'plan': {
+                'planName': d['plan.planName'],
+            },
+            'seats': {
+                'numberOfSeats':
+                    safeint(d['seats.numberOfSeats']),
+                'maximumNumberOfSeats':
+                    safeint(d['seats.maximumNumberOfSeats'])
+            },
+            'renewalSettings': {
+                'renewalType': d['renewalSettings.renewalType']
+            },
+            'purchaseOrderId': d['purchaseOrderId']
+        }).execute(num_retries=NUM_RETRIES)
 
 def main(args):
     domains = csv.DictReader(open(args.in_file, 'rb'))
     domains = [sanitize_row(d) for d in domains if len(d.get('customerDomain')) > 0]
 
-    args.apply = True
     if not args.apply:
         print "=== DRY RUN MODE -- NOT APPLYING CHANGES! ==="
 
@@ -210,49 +239,39 @@ def main(args):
 
         # test to see if a customer exists in Google.
         # if the customer does not exist anywhere, then skip this entry
-        try:
-            service.customers().get(
-                customerId=d['customerDomain']).execute(num_retries=NUM_RETRIES)
-        except Exception, e:
-            logging.error("%s: Customer doesn't exist yet, skipping transfer")
-            logging.exception(e)
-            continue
 
         print "Trying to create subscription..."
         try:
-            # Add a Google Apps subscription record.
-            response = service.subscriptions().insert(
-                customerId=d['customerDomain'],
-                trace=None,
-                customerAuthToken=d['customerAuthToken'],
-                body={
-                    'customerId': d['customerDomain'],
-                    'subscriptionId': d['subscriptionId'],
-                    'skuId': d['skuId'],
-                    'plan': {
-                        'planName': d['plan.planName'],
-                        'isCommitmentPlan': bool(d['plan.isCommitmentPlan']),
-                        'commitmentInterval': {
-                            'startTime':
-                                safeint(d['plan.commitmentInterval.startTime']),
-                            'endTime':
-                                safeint(d['plan.commitmentInterval.endTime'])
-                        }
-                    },
-                    'seats': {
-                        'numberOfSeats':
-                            safeint(d['seats.numberOfSeats']),
-                        'maximumNumberOfSeats':
-                            safeint(d['seats.maximumNumberOfSeats'])
-                    },
-                    'renewalSettings': {
-                        'renewalType': d['renewalSettings.renewalType']
-                    },
-                    'purchaseOrderId': d['purchaseOrderId']
-                }).execute(num_retries=NUM_RETRIES)
-        except Exception, e:
-            logging.error("%s: Error performing transfer" % domain)
-            logging.exception(e)
+            create_subscription(service=service, d=d)
+        except HttpError, e:
+            status = e.resp.status
+            if status == 409:
+                # pass, the customer has already been transferred.
+                logging.warning("%s: Skipping customer (conflict)" % domain)
+                pass
+            elif status == 404:
+                # they are in the super old billing system.
+                # transfer customer from old billing
+                try:
+                    create_customer(service, d=d)
+                except HttpError, ee:
+                    logging.error("%s: Error when transferring "
+                                  "customer from old billing" % domain)
+
+                # transfer their Google Apps.
+                try:
+                    create_subscription(service, d=d)
+                except HttpError, ee:
+                    logging.error("%s: Error when transferring "
+                                  "sub from old billing" % domain)
+            elif status == 403:
+                # probably suspended?
+                logging.error("%s: Error performing transfer (403)" % domain)
+                logging.exception(e)
+            else:
+                # an explosion has occured.
+                logging.error("%s: Error performing transfer" % domain)
+                logging.exception(e)
 
         time.sleep(THROTTLE_SLEEP)
 
