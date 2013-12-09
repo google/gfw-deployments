@@ -99,8 +99,6 @@ def main(args):
                     version=RESELLER_API_VERSION,
                     http=http)
 
-    response = service.subscriptions().list().execute(num_retries=NUM_RETRIES)
-
     writer = csv.DictWriter(
         open(args.out_file, 'wb'),
         fieldnames=[
@@ -125,17 +123,25 @@ def main(args):
         ])
 
     writer.writeheader()
+    pageToken = ""
+    while pageToken is not None:
+        response = service.subscriptions().list(pageToken=pageToken).\
+            execute(num_retries=NUM_RETRIES)
+        
+        pageToken = response.get('nextPageToken')
 
-    for subscription in response['subscriptions']:
-        data = flatten(subscription)
-        writer.extrasaction = "raise"
-        try:
-            writer.writerow(data)
-        except ValueError, e:
-            # log it as a warning, but continue..
-            logging.warning(e)
-            writer.extrasaction = "ignore"
-            writer.writerow(data)
+        for subscription in response['subscriptions']:
+            data = flatten(subscription)
+            writer.extrasaction = "raise"
+            try:
+                writer.writerow(data)
+            except ValueError, e:
+                # log it as a warning, but continue..
+                logging.warning(e)
+                writer.extrasaction = "ignore"
+                writer.writerow(data)
+
+
 
 if __name__ == "__main__":
 
