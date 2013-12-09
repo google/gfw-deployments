@@ -240,7 +240,7 @@ def main(args):
         # test to see if a customer exists in Google.
         # if the customer does not exist anywhere, then skip this entry
 
-        print "Trying to create subscription..."
+        print "Trying to create subscription for domain (%s)..." % domain
         try:
             create_subscription(service=service, d=d)
         except HttpError, e:
