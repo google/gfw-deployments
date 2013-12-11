@@ -61,6 +61,14 @@ RESELLER_API_VERSION = "v1"
 NUM_RETRIES = 5
 CLIENT_SECRETS = 'client_secrets.json'
 
+FLATTENED_DATEFIELDS = [
+    'creationTime',
+    'plan.commitmentInterval.startTime',
+    'plan.commitmentInterval.endTime',
+    'trialSettings.trialEndTime',
+    'transferInfo.transferabilityExpirationTime'
+]
+
 http = httplib2.Http()
 
 # shamelessly borrowed from:
@@ -127,12 +135,18 @@ def main(args):
     while pageToken is not None:
         response = service.subscriptions().list(pageToken=pageToken).\
             execute(num_retries=NUM_RETRIES)
-        
+
         pageToken = response.get('nextPageToken')
 
         for subscription in response['subscriptions']:
             data = flatten(subscription)
             writer.extrasaction = "raise"
+            from time import strftime
+            from datetime import datetime
+            for field in FLATTENED_DATEFIELDS:
+                if data.get(field):
+                    data[field] = datetime.utcfromtimestamp(int(data[field]) / 1000)
+
             try:
                 writer.writerow(data)
             except ValueError, e:
@@ -140,6 +154,7 @@ def main(args):
                 logging.warning(e)
                 writer.extrasaction = "ignore"
                 writer.writerow(data)
+
 
 
 
