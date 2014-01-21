@@ -6,6 +6,7 @@
 </p>
 
 <form method="POST" action="/step7">
+    <input type="hidden" name="token" value="{{ _csrf_token_ }}">
     <input type="submit" class="maia-button" value="Next &raquo;">
 </form>
 {% endblock %}

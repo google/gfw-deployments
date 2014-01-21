@@ -1,4 +1,4 @@
-application: google:rapid-reseller
+application: google.com:rapid-reseller
 version: 1
 runtime: python27
 threadsafe: yes
@@ -22,7 +22,7 @@ handlers:
   login: admin
 
 - url: .*
-  script: main.wsgi
+  script: main.app
   secure: always
 
 libraries:

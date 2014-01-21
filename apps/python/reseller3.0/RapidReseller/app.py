@@ -22,37 +22,42 @@ __author__ = 'richieforeman@google.com (Richie Foreman)'
 
 import os
 
-import logging
-
-
 from google.appengine.api import users
-import settings
 import jinja2
+import logging
 import traceback
+from uuid import uuid4
 import webapp2
 from webapp2_extras import sessions
 
-
-class WSGIApplication(webapp2.WSGIApplication):
-
-    def route(self, uri):
-        '''
-        Class decorator for defining a route.
-        '''
-        def wrapper(func):
-            self.router.add(webapp2.Route(uri, handler=func))
-            return func
-
-        return wrapper
+import settings
 
 
 class BaseHandler(webapp2.RequestHandler):
     def dispatch(self):
+        # activate session store.
         self.session_store = sessions.get_store(request=self.request)
+
+        # dispatch handler.
         out = webapp2.RequestHandler.dispatch(self)
         self.response.out.write(out)
 
+        # save session.
         self.session_store.save_sessions(self.response)
+
+    def get_csrf_token(self):
+        token = self.session.get('csrf_token', None)
+
+        if token is None:
+            token = uuid4().hex
+            self.session['csrf_token'] = token
+
+        return token
+
+    def regen_csrf_token(self):
+        token = uuid4().hex
+        self.session['csrf_token'] = token
+        return token
 
     @webapp2.cached_property
     def session(self):
@@ -62,7 +67,6 @@ class BaseHandler(webapp2.RequestHandler):
 
     @webapp2.cached_property
     def jinja(self):
-
         path = os.path.dirname(os.path.realpath(__file__))
 
         return jinja2.Environment(
@@ -89,10 +93,10 @@ class BaseHandler(webapp2.RequestHandler):
             "settings": settings,
             "user": users.get_current_user(),
             "is_admin": users.is_current_user_admin(),
-            "os_environ": os.environ
+            "os_environ": os.environ,
+            '_csrf_token_': self.get_csrf_token()
         })
 
         return self.jinja.get_template(template).render(**kwargs)
 
 
-wsgi = WSGIApplication(config=settings.WEBAPP2_CONFIG)

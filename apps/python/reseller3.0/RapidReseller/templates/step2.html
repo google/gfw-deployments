@@ -1,11 +1,10 @@
 
 {% extends "templates/_base.html" %}
 {% block content %}
-<h1>Step2: Create A Subscription</h1>
+<h1>Step 2: Create A Subscription</h1>
     <p>
-        Every customer record can have one or more subscriptions.
-        Subscriptions include a seat count and a SKU.  For this example,
-        a trial domain subscription will be provisioned.
+        Every resold customer can have one or more subscriptions.
+        Subscriptions include a seat count, SKU, and renewal settings.
         Additional subscriptions include paid Google Apps accounts,
         Google Apps Vault and optional add-on storage.
         Subscriptions can also auto-renew or cancel at the end of the term.
@@ -23,7 +22,7 @@
                 <input type="submit" value="Next &raquo;" class="maia-button">
 
             </fieldset>
-
+            <input type="hidden" name="token" value="{{ _csrf_token_ }}">
         </form>
     </p>
 {% endblock %}
