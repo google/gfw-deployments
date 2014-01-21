@@ -54,7 +54,6 @@ class TaskCleanup(BaseHandler):
         logging.info("Execing cleanup task for domain (%s)" % domain)
 
         http = httplib2.Http()
-        httplib2.debuglevel = 4
         credentials = get_credentials(settings.RESELLER_ADMIN)
         credentials.authorize(http)
 
@@ -77,13 +76,13 @@ class TaskCleanup(BaseHandler):
             maxResults=100).execute(num_retries=5)
 
         # resort the subscriptions and bump GAFB subs to the bottom
-        subs = sorted(
-            response['subscriptions'],
-            cmp=lambda a, b: int(a['skuId'] == ResellerSKU.GoogleApps) - 1)
+        subs = response['subscriptions']
 
         batch = BatchHttpRequest(callback=delete_sub_callback)
 
         logging.info("Purging %d subs" % len(subs))
+
+        apps_subscription = None
 
         for s in subs:
             if s['status'] in [ResellerDeletionType.Cancel,
@@ -92,21 +91,29 @@ class TaskCleanup(BaseHandler):
                 logging.info("Skipping subscription, in deleted state")
                 continue
 
-            # Google-Drive-storage / Google-Vault must be cancelled.
-            deletionType = ResellerDeletionType.Cancel
-
-            # GAfB cannot be 'cancelled', and must be 'suspended'
+            # GAfB cannot be deleted in the batch request with the others.
             if s['skuId'] == ResellerSKU.GoogleApps:
-                deletionType = ResellerDeletionType.Suspend
+                apps_subscription = s
+                continue
 
+            # Google-Drive-storage / Google-Vault must be cancelled.
             request = service.subscriptions().delete(
                 customerId=domain,
                 subscriptionId=s['subscriptionId'],
-                deletionType=deletionType)
+                deletionType=ResellerDeletionType.Cancel)
 
             batch.add(request)
 
         batch.execute(http=http)
+
+        # Delete
+        if apps_subscription:
+            service.subscriptions().delete(
+                customerId=domain,
+                subscriptionId=apps_subscription['subscriptionId'],
+                deletionType=ResellerDeletionType.Suspend
+            ).execute(num_retries=5)
+
 
 
 

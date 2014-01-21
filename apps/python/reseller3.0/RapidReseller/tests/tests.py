@@ -29,6 +29,14 @@ from mock import patch
 from google.appengine.ext import db
 from google.appengine.ext import testbed
 from google.appengine.datastore import datastore_stub_util
+from apiclient.http import HttpMock
+import json
+from apiclient.http import HttpMockSequence
+import os
+TEST_ROOT = os.path.dirname(os.path.realpath(__file__))
+RESELLER_DISCOVERY = open(TEST_ROOT + '/data/reseller_v1.json', 'rb').read()
+
+app = main.app
 
 class BaseTestCase(unittest.TestCase):
     def setUp(self):
@@ -36,6 +44,7 @@ class BaseTestCase(unittest.TestCase):
         self.testbed.activate()
         self.testbed.init_memcache_stub()
         self.testbed.init_urlfetch_stub()
+        self.testbed.init_taskqueue_stub()
 
     def tearDown(self):
         self.testbed.deactivate()
@@ -46,7 +55,7 @@ class Test_Index(BaseTestCase):
         request = webapp2.Request.blank('/')
 
         with patch('app.BaseHandler.render_template') as template:
-            response = request.get_response(main.wsgi)
+            response = request.get_response(app)
             template.assert_called_with('templates/index.html')
 
         self.assertEqual(response.status_int, 200)
@@ -58,7 +67,7 @@ class Test_Step1(BaseTestCase):
 
         with patch('app.BaseHandler.render_template') as template, \
             patch('time.time', return_value="123") as time_mock:
-            response = request.get_response(main.wsgi)
+            response = request.get_response(main.app)
 
             template.assert_called_with(
                 "templates/step1.html",
@@ -71,7 +80,16 @@ class Test_Step1(BaseTestCase):
             'domain': 'demo-123.resold.richieforeman.net'
         })
 
-        response = request.get_response(main.wsgi)
+        http = HttpMockSequence([
+            ({'status': '200'}, RESELLER_DISCOVERY),
+            ({'status': '200'}, json.dumps({}))
+        ])
+        with patch('main.get_authorized_http', return_value=http):
+            response = request.get_response(app)
+
+        # there should be no http requests left over.
+        self.assertEqual(http._iterable, [])
+
 
 
 if __name__ == '__main__':
