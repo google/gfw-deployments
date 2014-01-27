@@ -1,0 +1,38 @@
+<h1>Step 2: Create A Subscription</h1>
+    <p>
+        Every resold customer can have one or more subscriptions.
+        Subscriptions include a seat count, SKU, and renewal settings.
+        Additional subscriptions include paid Google Apps accounts,
+        Google Apps Vault and optional add-on storage.
+        Subscriptions can also auto-renew or cancel at the end of the term.
+    </p>
+    <p>
+        All subscriptions can be billed yearly, or on a monthly basis.
+    </p>
+        <form name="subscription" method="POST" ng-submit="submit()" class="form-horizontal">
+                <div class="form-group" ng-class="{'has-error': subscription.$invalid}">
+                    <label class="control-label col-sm-2">Seat Count</label>
+                    <div class="col-sm-5">
+                       <input type="text"
+                           class="form-control"
+                           name="numberOfSeats"
+                           ng-model="numberOfSeats"
+                           integer
+                           ng-required="true">
+                    </div>
+
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-2">
+                        ...
+                    </div>
+                    <div class="col-sm-5">
+                        <input type="submit"
+                               value="Next &raquo;"
+                               class="btn btn-primary"
+                               ng-disabled="subscription.$invalid">
+                        <loading-indicator></loading-indicator>
+                    </div>
+                </div>
+        </form>
+    </p>

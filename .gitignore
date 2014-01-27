@@ -14,3 +14,8 @@ client_secrets.json
 privatekey.p12
 privatekey.pem
 
+apps/python/reseller3.0/RapidReseller/bower_components
+apps/python/reseller3.0/RapidReseller/node_modules
+apps/python/reseller3.0/RapidReseller/static/js
+apps/python/reseller3.0/RapidReseller/static/css
+settings_local.py

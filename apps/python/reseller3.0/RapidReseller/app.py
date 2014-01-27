@@ -23,15 +23,18 @@ __author__ = 'richieforeman@google.com (Richie Foreman)'
 import os
 
 from google.appengine.api import users
-import jinja2
 import logging
 import traceback
 from uuid import uuid4
 import webapp2
+import json
 from webapp2_extras import sessions
-
+from hashlib import sha1
 import settings
 
+
+class WSGIApplication(webapp2.WSGIApplication):
+    _ENABLE_CSRF = True
 
 class BaseHandler(webapp2.RequestHandler):
     def dispatch(self):
@@ -40,22 +43,26 @@ class BaseHandler(webapp2.RequestHandler):
 
         # dispatch handler.
         out = webapp2.RequestHandler.dispatch(self)
-        self.response.out.write(out)
+
+        # Let angular know about our XSRF-TOKEN
+        self.response.set_cookie("XSRF-TOKEN", self.get_csrf_token())
 
         # save session.
         self.session_store.save_sessions(self.response)
+
+        return out
 
     def get_csrf_token(self):
         token = self.session.get('csrf_token', None)
 
         if token is None:
-            token = uuid4().hex
-            self.session['csrf_token'] = token
-
+            token = self.regen_csrf_token()
         return token
 
     def regen_csrf_token(self):
-        token = uuid4().hex
+        sess_cookie = self.request.cookies.get('session')
+        token = sha1(str(sess_cookie)+uuid4().hex).hexdigest()
+
         self.session['csrf_token'] = token
         return token
 
@@ -65,38 +72,38 @@ class BaseHandler(webapp2.RequestHandler):
         return self.session_store.get_session(backend=settings.SESSION_BACKEND,
                                               max_age=settings.SESSION_MAXAGE)
 
-    @webapp2.cached_property
-    def jinja(self):
-        path = os.path.dirname(os.path.realpath(__file__))
-
-        return jinja2.Environment(
-            loader=jinja2.FileSystemLoader(path))
-
     def handle_exception(self, exception, debug):
         self.response.set_status(500)
         logging.exception(exception)
-        return self.render_template("templates/_exception.html",
-                                    exception=traceback.format_exc())
+        raise exception
 
     def render_template(self, template, **kwargs):
-        '''
-        Render a Jinja Template, taking template variables as **kwargs
-        :param t:
-        :param kwargs:
-        :return:
-        '''
+        return file(template).read()
 
-        # inject some template variables
-        kwargs.update({
-            "url": self.request.url,
-            "path": self.request.path,
-            "settings": settings,
-            "user": users.get_current_user(),
-            "is_admin": users.is_current_user_admin(),
-            "os_environ": os.environ,
-            '_csrf_token_': self.get_csrf_token()
-        })
+from apiclient.http import HttpError
+class ApiHandler(BaseHandler):
+    json_data = {}
 
-        return self.jinja.get_template(template).render(**kwargs)
+    def dispatch(self):
+        if self.request.body:
+            self.json_data = json.loads(self.request.body)
 
+        response = super(ApiHandler, self).dispatch()
 
+        if response:
+            self.response.out.write(json.dumps(response))
+
+    def handle_exception(self, exception, debug):
+        self.response.set_status(500)
+
+        logging.exception(exception)
+
+        if type(exception) is HttpError:
+            data = json.loads(exception.content)
+            message = data.get('error',{}).get('message')
+        else:
+            message = str(exception)
+
+        self.response.out.write(json.dumps({
+            'message': message
+        }))
