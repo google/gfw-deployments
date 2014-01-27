@@ -58,18 +58,23 @@ __author__ = 'richieforeman@google.com (Richie Foreman)'
 """
 
 from apiclient.discovery import build
+from apiclient.http import HttpError
 from google.appengine.api import taskqueue
 import httplib2
 import logging
 import time
 import webapp2
 
+from app import ApiHandler
 from app import BaseHandler
+from app import WSGIApplication
 
 from constants import ResellerPlanName
 from constants import ResellerSKU
 from constants import ResellerRenewalType
 from constants import ResellerProduct
+
+import json
 
 import settings
 
@@ -79,25 +84,25 @@ from utils import csrf_protect
 class IndexHandler(BaseHandler):
 
     def get(self):
-        return self.render_template("templates/index.html")
+        # draw the initial baseline template.
+        self.response.out.write(self.render_template("templates/base.html"))
 
-
-class StepOneHandler(BaseHandler):
-    def get(self):
-
-        # generate a bogus domain name for demo purposes.
-        domain = settings.DOMAIN_TEMPLATE % int(time.time())
-
-        return self.render_template("templates/step1.html",
-                                    domain=domain)
+class StepOneHandler(ApiHandler):
 
     @csrf_protect
     def post(self):
-        domain = self.request.get('domain')
+        domain = self.json_data['domain']
 
         service = build(serviceName="reseller",
                         version=settings.RESELLER_API_VERSION,
                         http=get_authorized_http())
+
+        try:
+            method = service.customers().get(customerId=domain).execute()
+            raise Exception("That customer already exists")
+        except HttpError, e:
+            if int(e.resp['status']) != 404:
+                raise
 
         method = service.customers().insert(body={
             'customerDomain': domain,
@@ -114,42 +119,40 @@ class StepOneHandler(BaseHandler):
             }
         }).execute()
 
-        self.session['domain'] = domain
-
         # Mark the domain for deletion in approx 5 days.
         taskqueue.add(url="/tasks/cleanup",
-                      name="cleanup__%s" % domain.replace(".", "_"),
                       countdown=settings.DOMAIN_CLEANUP_TIMER,
                       params={
                           'domain': domain
                       })
 
-        return self.redirect("/step2")
+        return method
 
 
-class StepTwoHandler(BaseHandler):
-    def get(self):
-        return self.render_template("templates/step2.html")
+class StepTwoHandler(ApiHandler):
 
     @csrf_protect
     def post(self):
+
+        domain = self.json_data['domain']
+        numberOfSeats = self.json_data['numberOfSeats']
+
         service = build(serviceName="reseller",
                         version=settings.RESELLER_API_VERSION,
                         http=get_authorized_http())
 
         response = service.subscriptions().insert(
-            customerId=self.session['domain'],
+            customerId=domain,
             body={
-                'customerId': self.session['domain'],
-                'subscriptionId': "%s-apps" % self.session['domain'],
+                'customerId': domain,
+                'subscriptionId': "%s-apps" % domain,
                 'skuId': ResellerSKU.GoogleApps,
                 'plan': {
                     'planName': ResellerPlanName.Flexible,
-                    'isCommitmentPlan': False,
                 },
                 'seats': {
-                    'numberOfSeats': self.request.get("seats"),
-                    'maximumNumberOfSeats': self.request.get("seats")
+                    'numberOfSeats': numberOfSeats,
+                    'maximumNumberOfSeats': numberOfSeats
                 },
                 'renewalSettings': {
                     'renewalType': ResellerRenewalType.PayAsYouGo
@@ -157,15 +160,10 @@ class StepTwoHandler(BaseHandler):
                 'purchaseOrderId': 'G00gl39001'
             }).execute(num_retries=5)
 
-        return self.redirect("/step3")
+        return response
 
 
-class StepThreeHandler(BaseHandler):
-    def get(self):
-        '''
-        Prompt the user to select a verification method.
-        '''
-        return self.render_template("templates/step3.html")
+class StepThreeHandler(ApiHandler):
 
     @csrf_protect
     def post(self):
@@ -174,16 +172,9 @@ class StepThreeHandler(BaseHandler):
         '''
 
         # establish default values.
-        verification_type = "INET_DOMAIN"
-        identifier = self.session['domain']
-        verification_method = self.request.get("verificationMethod")
-
-        # Does the requested verification method fall into the "site" type?
-        if verification_method in settings.SITE_VERIFICATION_METHODS:
-            # a "site" type is chosen, the values are a different.
-            verification_type = "SITE"
-            # site verification methods must begin with http or https
-            identifier = "http://%s" % self.session['domain']
+        verification_type = self.json_data['verificationType']
+        identifier = self.json_data['verificationIdentifier']
+        verification_method = self.json_data['verificationMethod']
 
         # build the site verification service.
         service = build(serviceName="siteVerification",
@@ -199,15 +190,18 @@ class StepThreeHandler(BaseHandler):
             'verificationMethod': verification_method
         }).execute(num_retries=5)
 
-        return self.render_template("templates/step3_confirm.html",
-                                    verification_token=response['token'],
-                                    verification_type=verification_type,
-                                    verification_method=verification_method,
-                                    verification_identifier=identifier)
+        return {
+            'verification_token': response['token'],
+            'verification_type': verification_type,
+            'verification_method': verification_method,
+            'verification_identifier': identifier
+        }
 
 
-class StepFourHandler(BaseHandler):
-    def get(self):
+class StepFourHandler(ApiHandler):
+
+    @csrf_protect
+    def post(self):
         '''
         Call the site verification service and see if the
         token has been fulfilled (e.g. a dns entry added)
@@ -217,40 +211,30 @@ class StepFourHandler(BaseHandler):
                         version="v1",
                         http=get_authorized_http())
 
-        verification_type = self.request.get("verification_type")
-        verification_ident = self.request.get("verification_identifier")
-        verification_method = self.request.get("verification_method")
+        verification_type = self.json_data.get("verification_type")
+        verification_ident = self.json_data.get("verification_identifier")
+        verification_method = self.json_data.get("verification_method")
 
-        verification_status = None
-        try:
-            # try to do a verification,
-            # which will test the method on the Google server side.
-            service.webResource().insert(
-                verificationMethod=verification_method,
-                body={
-                    'site': {
-                        'type': verification_type,
-                        'identifier': verification_ident
-                    },
-                    'verificationMethod': verification_method
-                }
-            ).execute(num_retries=5)
-            verification_status = True
-        except Exception, e:
-            verification_status = False
-
-        return self.render_template("templates/step4.html",
-                                    verification_status=verification_status)
+        # try to do a verification,
+        # which will test the method on the Google server side.
+        service.webResource().insert(
+            verificationMethod=verification_method,
+            body={
+                'site': {
+                    'type': verification_type,
+                    'identifier': verification_ident
+                },
+                'verificationMethod': verification_method
+            }
+        ).execute(num_retries=5)
 
 
-class StepFiveHandler(BaseHandler):
-
-    def get(self):
-        return self.render_template("templates/step5.html")
+class StepFiveHandler(ApiHandler):
 
     @csrf_protect
     def post(self):
-        username = "admin@%s" % self.session['domain']
+        domain = self.json_data['domain']
+        username = "admin@%s" % domain
         password = "P@ssw0rd!!"
 
         service = build(serviceName="admin",
@@ -276,28 +260,27 @@ class StepFiveHandler(BaseHandler):
                 'status': True
             }).execute(num_retries=5)
 
-        self.session['username'] = username
+        return {
+            'domain': domain,
+            'username': username,
+            'password': password
+        }
 
-        return self.render_template("templates/step5_confirm.html",
-                                    domain=self.session['domain'],
-                                    username=username,
-                                    password=password)
 
-
-class StepSixHandler(BaseHandler):
-    def get(self):
-        return self.render_template("templates/step6.html")
+class StepSixHandler(ApiHandler):
 
     @csrf_protect
     def post(self):
+        domain = self.json_data['domain']
+
         service = build(serviceName="reseller",
                         version=settings.RESELLER_API_VERSION,
                         http=get_authorized_http())
 
         response = service.subscriptions().insert(
-            customerId=self.session['domain'],
+            customerId=domain,
             body={
-                'customerId': self.session['domain'],
+                'customerId': domain,
                 'skuId': ResellerSKU.GoogleDriveStorage20GB,
                 'plan': {
                     'planName': ResellerPlanName.Flexible
@@ -309,15 +292,15 @@ class StepSixHandler(BaseHandler):
                 'purchaseOrderId': 'G00gl39001-d20'
             }).execute(num_retries=5)
 
-        return self.redirect("/step7")
 
-
-class StepSevenHandler(BaseHandler):
+class StepSevenHandler(ApiHandler):
     def get(self):
         return self.render_template("templates/step7.html")
 
     @csrf_protect
     def post(self):
+        domain = self.json_data['domain']
+
         service = build(serviceName="licensing",
                         version='v1',
                         http=get_authorized_http())
@@ -326,19 +309,23 @@ class StepSevenHandler(BaseHandler):
             productId=ResellerProduct.GoogleDrive,
             skuId=ResellerSKU.GoogleDriveStorage20GB,
             body={
-                'userId': 'admin@%s' % self.session['domain']
+                'userId': 'admin@%s' % domain
             }).execute(num_retries=5)
 
-        return self.render_template("templates/fin.html")
 
+app = WSGIApplication(routes=[
 
-app = webapp2.WSGIApplication(routes=[
-    (r'/', IndexHandler),
-    (r'/step1', StepOneHandler),
-    (r'/step2', StepTwoHandler),
-    (r'/step3', StepThreeHandler),
-    (r'/step4', StepFourHandler),
-    (r'/step5', StepFiveHandler),
-    (r'/step6', StepSixHandler),
-    (r'/step7', StepSevenHandler)
+    # Reseller Provisioning Flow API Methods
+    (r'/api/createCustomer', StepOneHandler),
+    (r'/api/createSubscription', StepTwoHandler),
+    (r'/api/getSiteValidationToken', StepThreeHandler),
+    (r'/api/testValidation', StepFourHandler),
+    (r'/api/createUser', StepFiveHandler),
+    (r'/api/createDriveStorageSubscription', StepSixHandler),
+    (r'/api/assignDriveLicense', StepSevenHandler),
+
+    # Misc Data APIs for Angular
+
+    # Generic Template Method.
+    (r'/.*', IndexHandler)
 ], config=settings.WEBAPP2_CONFIG)

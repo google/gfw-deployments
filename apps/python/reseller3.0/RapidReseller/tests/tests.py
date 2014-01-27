@@ -37,7 +37,9 @@ TEST_ROOT = os.path.dirname(os.path.realpath(__file__))
 RESELLER_DISCOVERY = open(TEST_ROOT + '/data/reseller_v1.json', 'rb').read()
 
 app = main.app
+app._ENABLE_CSRF = False
 
+RESELLER_DISCOVERY_URL = "https://www.googleapis.com/discovery/v1/apis/reseller/v1/rest"
 class BaseTestCase(unittest.TestCase):
     def setUp(self):
         self.testbed = testbed.Testbed()
@@ -79,17 +81,31 @@ class Test_Step1(BaseTestCase):
         request = webapp2.Request.blank("/step1", POST={
             'domain': 'demo-123.resold.richieforeman.net'
         })
+        from mock import MagicMock
 
         http = HttpMockSequence([
             ({'status': '200'}, RESELLER_DISCOVERY),
             ({'status': '200'}, json.dumps({}))
         ])
+
+        # wrap http.request so we can spy on it.
+        http.request = MagicMock(wraps=http.request)
+
         with patch('main.get_authorized_http', return_value=http):
             response = request.get_response(app)
 
-        # there should be no http requests left over.
-        self.assertEqual(http._iterable, [])
+            self.assertTrue(http.request.called)
+            discovery_call = http.request.call_args_list[0]
+            create_customer = http.request.call_args_list[1]
 
+            # ensure that a discovery call occured.
+            (url,), args = discovery_call
+            self.assertEqual(url, RESELLER_DISCOVERY_URL)
+
+            # ensure that a customer was created via the POST api.
+            (url, method), args = create_customer
+            self.assertEqual(url, 'https://www.googleapis.com/apps/reseller/v1/customers?alt=json')
+            self.assertEqual(method, 'POST')
 
 
 if __name__ == '__main__':

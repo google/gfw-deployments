@@ -22,6 +22,7 @@ __author__ = 'richieforeman@google.com (Richie Foreman)'
 
 from google.appengine.api import memcache
 import httplib2
+import logging
 
 import settings
 from oauth2client.client import SignedJwtAssertionCredentials
@@ -29,7 +30,11 @@ from oauth2client.client import SignedJwtAssertionCredentials
 
 def csrf_protect(func):
     def wrapper(instance):
-        token = instance.request.get("token", None)
+        if not instance.app._ENABLE_CSRF:
+            return func(instance)
+
+        token = instance.request.get("token", None) or \
+                instance.request.headers.get("X-Xsrf-Token", None)
 
         if token is not None and token == instance.get_csrf_token():
             instance.regen_csrf_token()
@@ -42,8 +47,7 @@ def csrf_protect(func):
 
 def get_authorized_http():
     credentials = get_credentials(sub=settings.RESELLER_ADMIN)
-
-    http = httplib2.Http(timeout=20)
+    http = httplib2.Http(timeout=20, cache=memcache.Client())
     credentials.authorize(http)
     return http
 
@@ -58,6 +62,8 @@ def get_credentials(sub=None):
     credentials = memcache.get("rapid-reseller#credentials#%s" % sub)
 
     if credentials is None or credentials.invalid:
+        logging.info("Couldn't find cached token, refreshing")
+
         http = httplib2.Http()
 
         f = file(settings.OAUTH2_PRIVATEKEY)

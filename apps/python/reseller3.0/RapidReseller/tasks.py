@@ -24,8 +24,8 @@ import httplib2
 import time
 
 import logging
-from app import wsgi
 from app import BaseHandler
+from app import WSGIApplication
 
 from constants import ResellerPlanName
 from constants import ResellerSKU
@@ -44,11 +44,11 @@ from oauth2client.client import SignedJwtAssertionCredentials
 
 from utils import get_credentials
 
+import webapp2
 
-@wsgi.route("/tasks/cleanup")
+
 class TaskCleanup(BaseHandler):
-    def get(self):
-        self.post()
+
     def post(self):
         domain = self.request.get("domain")
         logging.info("Execing cleanup task for domain (%s)" % domain)
@@ -114,7 +114,6 @@ class TaskCleanup(BaseHandler):
                 deletionType=ResellerDeletionType.Suspend
             ).execute(num_retries=5)
 
-
-
-
-
+app = WSGIApplication(routes=[
+    (r'/tasks/cleanup', TaskCleanup),
+], config=settings.WEBAPP2_CONFIG)

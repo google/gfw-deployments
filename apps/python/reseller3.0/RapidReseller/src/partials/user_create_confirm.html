@@ -1,0 +1,34 @@
+<div ng-switch="userStatus">
+    <div ng-switch-default>
+        Working...
+    </div>
+    <div ng-switch-when="0">
+        <h1>User Creation Failed!</h1>
+        <a href="/" class="btn btn-default">Start Over &raquo;</a>
+        <a ng-click="next()" class="btn btn-primary">(Optional) Allocate and Assign Drive Seats &raquo;</a>
+    </div>
+    <div ng-switch-when="1">
+        <h1>User Created!</h1>
+        <p>You can login to the new domain using the following credentials:</p>
+
+        <p>
+            <a href="https://admin.google.com" target="_blank">
+                Admin ControlPanel
+            </a>
+        </p>
+
+        <p>
+            Username
+            <input type="text" onClick="this.select();" value="{{username}}">
+        </p>
+
+        <p>
+            Password
+            <input type="text" onClick="this.select();"value="{{password}}">
+        </p>
+
+        <a href="/" class="btn btn-default">Start Over &raquo;</a>
+        <a ng-click="next()" class="btn btn-primary">(Optional) Allocate and Assign Drive Seats &raquo;</a>
+    </div>
+</div>
+

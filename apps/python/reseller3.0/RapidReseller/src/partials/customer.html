@@ -1,0 +1,26 @@
+<h1>Step 1: Enter a New Customer Domain</h1>
+<p>
+    Each resold customer must be provisioned with a primary domain.
+</p>
+<p>
+<form name="domainForm" ng-submit="submit()" novalidate class="form-inline" role="form">
+    <div class="form-group" ng-class="{'has-error': domainForm.$invalid}">
+        <input class="form-control"
+               type="text"
+               name="domain"
+               ng-model="domain"
+               ng-required="true"
+               required
+               ng-minlength="3"
+               style="width:400px"
+               ng-pattern="/.*\..*/">
+            </div>
+    <div class="form-group">
+            <input type="submit" value="Next &raquo;" class="btn btn-primary" ng-disabled="domainForm.$invalid">
+            <loading-indicator></loading-indicator>
+    </div>
+
+
+
+</form>
+</p>
