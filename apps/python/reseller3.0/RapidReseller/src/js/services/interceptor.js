@@ -22,6 +22,6 @@ mod.factory("loadingInterceptor", function ($q, HttpLoadingChannelService) {
             HttpLoadingChannelService.setState(0);
             return $q.reject(rejection);
         }
-    }
+    };
 
 });

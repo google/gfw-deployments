@@ -1,40 +1,47 @@
 #!/usr/bin/python
 #
 # Copyright 2013 Google Inc. All Rights Reserved.
+"""
+    Base handlers and core application components
+
+        WSGIApplication: Extended from webapp2.WSGIApplication
+        BaseHandler: Basic webapp2 request handler, with templating and XSRF
+        ApiHandler: Basic webapp2 request handler for serving a simple JSON API
 
 """
-      DISCLAIMER:
+
+"""
+   DISCLAIMER:
 
    (i) GOOGLE INC. ("GOOGLE") PROVIDES YOU ALL CODE HEREIN "AS IS" WITHOUT ANY
    WARRANTIES OF ANY KIND, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE, INCLUDING,
    WITHOUT LIMITATION, ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
    PARTICULAR PURPOSE AND NON-INFRINGEMENT; AND
 
-   (ii) IN NO EVENT WILL GOOGLE BE LIABLE FOR ANY LOST REVENUES, PROFIT OR DATA,
-   OR ANY DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE
+   (ii) IN NO EVENT WILL GOOGLE BE LIABLE FOR ANY LOST REVENUES, PROFIT OR DATA
+   , OR ANY DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE
    DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, EVEN IF
    GOOGLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, ARISING OUT OF
    THE USE OR INABILITY TO USE, MODIFICATION OR DISTRIBUTION OF THIS CODE OR
    ITS DERIVATIVES.
-   """
+"""
 
 __author__ = 'richieforeman@google.com (Richie Foreman)'
 
-import os
-
-from google.appengine.api import users
+from apiclient.http import HttpError
 import logging
-import traceback
+import json
+from oauth2client.appengine import xsrf_secret_key
+from oauth2client import xsrfutil
+import settings
 from uuid import uuid4
 import webapp2
-import json
 from webapp2_extras import sessions
-from hashlib import sha1
-import settings
 
 
 class WSGIApplication(webapp2.WSGIApplication):
     _ENABLE_CSRF = True
+
 
 class BaseHandler(webapp2.RequestHandler):
     def dispatch(self):
@@ -56,12 +63,12 @@ class BaseHandler(webapp2.RequestHandler):
         token = self.session.get('csrf_token', None)
 
         if token is None:
-            token = self.regen_csrf_token()
+            token = self.regenerate_csrf_token()
         return token
 
-    def regen_csrf_token(self):
-        sess_cookie = self.request.cookies.get('session')
-        token = sha1(str(sess_cookie)+uuid4().hex).hexdigest()
+    def regenerate_csrf_token(self):
+        session_cookie = self.request.cookies.get('session')
+        token = xsrfutil.generate_token(xsrf_secret_key(), session_cookie)
 
         self.session['csrf_token'] = token
         return token
@@ -80,7 +87,7 @@ class BaseHandler(webapp2.RequestHandler):
     def render_template(self, template, **kwargs):
         return file(template).read()
 
-from apiclient.http import HttpError
+
 class ApiHandler(BaseHandler):
     json_data = {}
 
@@ -100,7 +107,7 @@ class ApiHandler(BaseHandler):
 
         if type(exception) is HttpError:
             data = json.loads(exception.content)
-            message = data.get('error',{}).get('message')
+            message = data.get('error', {}).get('message')
         else:
             message = str(exception)
 

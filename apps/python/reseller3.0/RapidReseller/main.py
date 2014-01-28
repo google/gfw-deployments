@@ -10,8 +10,8 @@
    WITHOUT LIMITATION, ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
    PARTICULAR PURPOSE AND NON-INFRINGEMENT; AND
 
-   (ii) IN NO EVENT WILL GOOGLE BE LIABLE FOR ANY LOST REVENUES, PROFIT OR DATA,
-   OR ANY DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE
+   (ii) IN NO EVENT WILL GOOGLE BE LIABLE FOR ANY LOST REVENUES, PROFIT OR DATA
+   , OR ANY DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE
    DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, EVEN IF
    GOOGLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, ARISING OUT OF
    THE USE OR INABILITY TO USE, MODIFICATION OR DISTRIBUTION OF THIS CODE OR
@@ -60,10 +60,6 @@ __author__ = 'richieforeman@google.com (Richie Foreman)'
 from apiclient.discovery import build
 from apiclient.http import HttpError
 from google.appengine.api import taskqueue
-import httplib2
-import logging
-import time
-import webapp2
 
 from app import ApiHandler
 from app import BaseHandler
@@ -74,12 +70,11 @@ from constants import ResellerSKU
 from constants import ResellerRenewalType
 from constants import ResellerProduct
 
-import json
-
 import settings
 
 from utils import get_authorized_http
 from utils import csrf_protect
+
 
 class IndexHandler(BaseHandler):
 
@@ -87,11 +82,21 @@ class IndexHandler(BaseHandler):
         # draw the initial baseline template.
         self.response.out.write(self.render_template("templates/base.html"))
 
+
 class StepOneHandler(ApiHandler):
 
     @csrf_protect
     def post(self):
         domain = self.json_data['domain']
+        alternate_email = self.json_data['alternateEmail']
+        phone_number = self.json_data['phoneNumber']
+        contact_name = self.json_data['postalAddress.contactName']
+        organization_name = self.json_data['postalAddress.organizationName']
+        locality = self.json_data['postalAddress.locality']
+        country_code = self.json_data['postalAddress.countryCode']
+        region = self.json_data['postalAddress.region']
+        postal_code = self.json_data['postalAddress.postalCode']
+        address_line_1 = self.json_data['postalAddress.addressLine1']
 
         service = build(serviceName="reseller",
                         version=settings.RESELLER_API_VERSION,
@@ -106,16 +111,16 @@ class StepOneHandler(ApiHandler):
 
         method = service.customers().insert(body={
             'customerDomain': domain,
-            'alternateEmail': 'nobody@google.com',
-            'phoneNumber': '212.565.0000',
+            'alternateEmail': alternate_email,
+            'phoneNumber': phone_number,
             'postalAddress': {
-                'contactName': "A Googler",
-                'organizationName': 'Google, Inc',
-                'locality': 'New York City',
-                'countryCode': 'US',
-                'region': 'NY',
-                'postalCode': '10011',
-                'addressLine1': '76 9th Ave'
+                'contactName': contact_name,
+                'organizationName': organization_name,
+                'locality': locality,
+                'countryCode': country_code,
+                'region': region,
+                'postalCode': postal_code,
+                'addressLine1': address_line_1
             }
         }).execute()
 
@@ -202,10 +207,12 @@ class StepFourHandler(ApiHandler):
 
     @csrf_protect
     def post(self):
-        '''
+        """
+        Call site verification service with token.
+
         Call the site verification service and see if the
         token has been fulfilled (e.g. a dns entry added)
-        '''
+        """
 
         service = build(serviceName="siteVerification",
                         version="v1",
@@ -292,6 +299,8 @@ class StepSixHandler(ApiHandler):
                 'purchaseOrderId': 'G00gl39001-d20'
             }).execute(num_retries=5)
 
+        return response
+
 
 class StepSevenHandler(ApiHandler):
     def get(self):
@@ -323,8 +332,6 @@ app = WSGIApplication(routes=[
     (r'/api/createUser', StepFiveHandler),
     (r'/api/createDriveStorageSubscription', StepSixHandler),
     (r'/api/assignDriveLicense', StepSevenHandler),
-
-    # Misc Data APIs for Angular
 
     # Generic Template Method.
     (r'/.*', IndexHandler)

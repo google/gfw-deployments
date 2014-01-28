@@ -21,25 +21,24 @@
 __author__ = 'richieforeman@google.com (Richie Foreman)'
 
 
-import unittest
-import webapp2
+from apiclient.http import HttpMockSequence
+from google.appengine.ext import testbed
+import json
 import main
 from mock import patch
-
-from google.appengine.ext import db
-from google.appengine.ext import testbed
-from google.appengine.datastore import datastore_stub_util
-from apiclient.http import HttpMock
-import json
-from apiclient.http import HttpMockSequence
 import os
+import unittest
+import webapp2
+
+
 TEST_ROOT = os.path.dirname(os.path.realpath(__file__))
 RESELLER_DISCOVERY = open(TEST_ROOT + '/data/reseller_v1.json', 'rb').read()
+RESELLER_DISCOVERY_URL = "https://www.googleapis.com/discovery/v1/apis/reseller/v1/rest"
 
 app = main.app
 app._ENABLE_CSRF = False
 
-RESELLER_DISCOVERY_URL = "https://www.googleapis.com/discovery/v1/apis/reseller/v1/rest"
+
 class BaseTestCase(unittest.TestCase):
     def setUp(self):
         self.testbed = testbed.Testbed()
@@ -51,8 +50,9 @@ class BaseTestCase(unittest.TestCase):
     def tearDown(self):
         self.testbed.deactivate()
 
-class Test_Index(BaseTestCase):
-    def test_indexpage(self):
+
+class IndexTest(BaseTestCase):
+    def testGet(self):
         # it should draw the main index page.
         request = webapp2.Request.blank('/')
 
@@ -62,8 +62,9 @@ class Test_Index(BaseTestCase):
 
         self.assertEqual(response.status_int, 200)
 
-class Test_Step1(BaseTestCase):
-    def test_get(self):
+
+class Step1Test(BaseTestCase):
+    def testGet(self):
         # it should fetch the time and build a temporary domain name.
         request = webapp2.Request.blank('/step1')
 
@@ -77,7 +78,7 @@ class Test_Step1(BaseTestCase):
 
         self.assertEqual(response.status_int, 200)
 
-    def test_post(self):
+    def testPost(self):
         request = webapp2.Request.blank("/step1", POST={
             'domain': 'demo-123.resold.richieforeman.net'
         })

@@ -9,51 +9,51 @@ mod.config([
         $httpProvider.interceptors.push('loadingInterceptor');
         // Define routes here.
         $locationProvider.html5Mode(true);
-        $routeProvider
-            .when('/', {
+        $routeProvider.
+            when('/', {
                 templateUrl: 'partials/index.html',
                 controller: 'HomeController'
-            })
-            .when('/step1', {
+            }).
+            when('/step1', {
                 templateUrl: 'partials/customer.html',
                 controller: 'CustomerController'
-            })
-            .when('/step2', {
+            }).
+            when('/step2', {
                 templateUrl: 'partials/subscription.html',
                 controller: 'SubscriptionController'
-            })
-            .when("/step3", {
+            }).
+            when('/step3', {
                 templateUrl: 'partials/site_validation.html',
                 controller: 'SiteVerificationController'
-            })
-            .when("/step3_confirm", {
+            }).
+            when("/step3_confirm", {
                 templateUrl: 'partials/site_validation_confirm.html',
                 controller: 'SiteVerificationConfirmController'
-            })
-            .when('/step4', {
+            }).
+            when('/step4', {
                 templateUrl: 'partials/site_verification_action.html',
                 controller: 'SiteVerificationActionController'
-            })
-            .when("/step5", {
+            }).
+            when('/step5', {
                 templateUrl: 'partials/user_create.html',
                 controller: 'UserCreateController'
-            })
-            .when("/step5_confirm", {
+            }).
+            when('/step5_confirm', {
                 templateUrl: 'partials/user_create_confirm.html',
                 controller: 'UserCreateConfirmController'
-            })
-            .when("/step6", {
+            }).
+            when('/step6', {
                 templateUrl: 'partials/drive_storage_create.html',
                 controller: 'DriveStorageSubscriptionController'
-            })
-            .when("/step7", {
+            }).
+            when('/step7', {
                 templateUrl: 'partials/drive_storage_assign.html',
                 controller: 'DriveStorageLicenseController'
-            })
-            .when("/done", {
+            }).
+            when('/done', {
                 templateUrl: 'partials/done.html',
                 controller: 'DoneController'
-            })
-            .otherwise({ redirectTo: '/' });
+            }).
+            otherwise({ redirectTo: '/' });
     }
 ]);

@@ -37,7 +37,7 @@ def csrf_protect(func):
                 instance.request.headers.get("X-Xsrf-Token", None)
 
         if token is not None and token == instance.get_csrf_token():
-            instance.regen_csrf_token()
+            instance.regenerate_csrf_token()
             return func(instance)
 
         instance.abort(403)
