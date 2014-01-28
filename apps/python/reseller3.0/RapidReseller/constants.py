@@ -72,9 +72,6 @@ class ResellerSKU(object):
 
 
 class ResellerPlanName(object):
-    # As of 11/21/13, this is invalid.
-    # Annual, paid every month
-    #Annual = "ANNUAL"
 
     # Annual Prepaid for the entire year.
     AnnualYearly = "ANNUAL_YEARLY_PAY"
@@ -103,8 +100,6 @@ class ResellerDeletionType(object):
     Suspend = "suspend"
 
 class ResellerRenewalType(object):
-    # automatically renew for the same license count.
-    #AutoRenew = "AUTO_RENEW"
 
     # Auto renew with monthly pay
     AutoRenewMonthly = "AUTO_RENEW_MONTHLY_PAY"

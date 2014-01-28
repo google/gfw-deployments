@@ -11,7 +11,7 @@ mod.factory("HttpLoadingChannelService", function ($rootScope) {
         $rootScope.$on(HTTP_LOADING_CHANNEL_SERVICE_MESSAGE, function (e, message) {
             handler(message);
         });
-    }
+    };
 
     return this;
 });

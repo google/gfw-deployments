@@ -1,7 +1,12 @@
 #!/usr/bin/python
 #
 # Copyright 2013 Google Inc. All Rights Reserved.
+"""
+Response handlers for offline task queues.
 
+    TaskCleanUp: Purge a given Google Apps customer instance.
+
+"""
 """
       DISCLAIMER:
 
@@ -76,30 +81,30 @@ class TaskCleanup(BaseHandler):
             maxResults=100).execute(num_retries=5)
 
         # resort the subscriptions and bump GAFB subs to the bottom
-        subs = response['subscriptions']
+        all_subscriptions = response['subscriptions']
 
         batch = BatchHttpRequest(callback=delete_sub_callback)
 
-        logging.info("Purging %d subs" % len(subs))
+        logging.info("Purging %d subs" % len(all_subscriptions))
 
         apps_subscription = None
 
-        for s in subs:
-            if s['status'] in [ResellerDeletionType.Cancel,
-                               ResellerDeletionType.Suspend,
-                               ResellerDeletionType.Downgrade]:
+        for subscription in all_subscriptions:
+            if subscription['status'] in [ResellerDeletionType.Cancel,
+                                          ResellerDeletionType.Suspend,
+                                          ResellerDeletionType.Downgrade]:
                 logging.info("Skipping subscription, in deleted state")
                 continue
 
             # GAfB cannot be deleted in the batch request with the others.
-            if s['skuId'] == ResellerSKU.GoogleApps:
-                apps_subscription = s
+            if subscription['skuId'] == ResellerSKU.GoogleApps:
+                apps_subscription = subscription
                 continue
 
             # Google-Drive-storage / Google-Vault must be cancelled.
             request = service.subscriptions().delete(
                 customerId=domain,
-                subscriptionId=s['subscriptionId'],
+                subscriptionId=subscription['subscriptionId'],
                 deletionType=ResellerDeletionType.Cancel)
 
             batch.add(request)

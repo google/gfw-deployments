@@ -58,8 +58,8 @@ INET_DOMAIN_VERIFICATION_METHODS = ['DNS_TXT', 'DNS_CNAME']
 
 DOMAIN_TEMPLATE = "demo-%d.acmecorp.com"
 
-# clean up domains after 5 days.
-DOMAIN_CLEANUP_TIMER = (86400 * 5)
+# clean up domains after 2 days.
+DOMAIN_CLEANUP_TIMER = (86400 * 2)
 
 try:
     # utilize a local settings file.

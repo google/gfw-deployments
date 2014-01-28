@@ -12,7 +12,7 @@ mod.directive("loadingIndicator", function () {
                 $scope.currentState = state;
             });
         }
-    }
+    };
 });
 
 mod.directive('alertNotice', function () {
@@ -31,5 +31,5 @@ mod.directive('alertNotice', function () {
                 }, 5000);
             });
         }
-    }
+    };
 });

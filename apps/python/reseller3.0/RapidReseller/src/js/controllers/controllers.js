@@ -14,13 +14,32 @@ mod.controller('CustomerController', function ($scope,
                                                AlertChannelService,
                                                CurrentDomainService) {
     // Set a sensible default domain.
-    $scope.domain = "demo-"+new Date().getTime()+".resold.richieforeman.net";
+    $scope.customerDomain = "demo-"+new Date().getTime()+".resold.richieforeman.net";
+    $scope.alternateEmail = "nobody@google.com";
+    $scope.phoneNumber = "212.565.0000";
+    $scope.contactName = "A Googler";
+    $scope.organizationName = "Google Demo Company";
+    $scope.locality = "NYC";
+    $scope.region = "NY";
+    $scope.countryCode = "US";
+    $scope.postalCode = "11101";
+    $scope.addressLine1 = "76 9th Ave";
+
     $scope.submit = function() {
         $http.post("/api/createCustomer", {
-            domain: $scope.domain
+            'domain': $scope.customerDomain,
+            'alternateEmail': $scope.alternateEmail,
+            'phoneNumber': $scope.phoneNumber,
+            'postalAddress.contactName': $scope.contactName,
+            'postalAddress.addressLine1': $scope.addressLine1,
+            'postalAddress.organizationName': $scope.organizationName,
+            'postalAddress.locality': $scope.locality,
+            'postalAddress.region': $scope.region,
+            'postalAddress.countryCode': $scope.countryCode,
+            'postalAddress.postalCode': $scope.postalCode
         }).success(function (data, status, headers, config) {
             CurrentDomainService.set($scope.domain);
-            $location.path("/step2")
+            $location.path("/step2");
         }).error(function(data, status, headers, config) {
             AlertChannelService.Alert(data.message);
         });
@@ -57,15 +76,15 @@ mod.controller("SiteVerificationConfirmController", function($scope,
     $scope.verificationInfo = verificationInfo;
 
     $scope.next = function() {
-        $location.path("/step4")
-    }
+        $location.path("/step4");
+    };
 
 });
 
 mod.controller("UserCreateController", function($scope, $location) {
     $scope.next = function() {
-        $location.path("/step5_confirm")
-    }
+        $location.path("/step5_confirm");
+    };
 });
 
 mod.controller("DriveStorageSubscriptionController", function($scope,
@@ -81,7 +100,7 @@ mod.controller("DriveStorageSubscriptionController", function($scope,
         }).error(function (data, status, headers, config) {
             AlertChannelService.Alert("Error creating Drive Storage Subscription: " + data.message);
         });
-    }
+    };
 });
 
 mod.controller("DriveStorageLicenseController", function ($scope,
@@ -97,7 +116,7 @@ mod.controller("DriveStorageLicenseController", function ($scope,
         }).error(function (data, status, headers, config) {
             AlertChannelService.Alert("Error assigning Drive Storage License: " + data.message);
         });
-    }
+    };
 });
 
 mod.controller("UserCreateConfirmController", function($scope,
@@ -120,7 +139,7 @@ mod.controller("UserCreateConfirmController", function($scope,
 
     $scope.next = function() {
         $location.path("/step6");
-    }
+    };
 });
 
 

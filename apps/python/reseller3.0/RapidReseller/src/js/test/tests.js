@@ -52,6 +52,6 @@ describe('Services', function () {
         it('should store and retrieve a value as the location changes', function () {
             _service.setData("hello");
             expect(_service.getData()).toEqual("hello");
-        })
+        });
     });
 });
