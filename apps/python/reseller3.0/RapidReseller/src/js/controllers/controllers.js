@@ -1,12 +1,4 @@
-mod = angular.module(_CONTROLLERS_);
-
-mod.controller('HomeController', function ($scope, $http) {
-    // Nothing here, move along.
-});
-
-mod.controller("DoneController", function($scope) {
-    // Nothing here, move along.
-});
+mod = angular.module(CONTROLLERS);
 
 mod.controller('CustomerController', function ($scope,
                                                $http,

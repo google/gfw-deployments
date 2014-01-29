@@ -1,7 +1,7 @@
 describe('Services', function () {
     var _mockScope;
 
-    beforeEach(module(_SERVICES_, function ($provide) {
+    beforeEach(module(SERVICES, function ($provide) {
         _mockScope = {
             $emit: jasmine.createSpy('rootScope.$emit'),
             $on: jasmine.createSpy('rootScope.$on'),

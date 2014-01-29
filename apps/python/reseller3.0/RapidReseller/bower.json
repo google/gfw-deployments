@@ -1,6 +1,6 @@
 {
   "name": "Rapid Reseller",
-  "description": "Rapid Reseller By Google",
+  "description": "Rapid Reseller",
   "version": "1.0.0",
   "dependencies": {
     "angular": "~1.2.8",

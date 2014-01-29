@@ -266,8 +266,6 @@ class StepSixHandler(ApiHandler):
 
 
 class StepSevenHandler(ApiHandler):
-    def get(self):
-        return self.render_template("templates/step7.html")
 
     @csrf_protect
     def post(self):

@@ -1,4 +1,4 @@
-mod = angular.module(_DIRECTIVES_);
+mod = angular.module(DIRECTIVES);
 
 mod.directive("loadingIndicator", function () {
     return {
