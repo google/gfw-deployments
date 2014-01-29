@@ -20,43 +20,6 @@
 
 __author__ = 'richieforeman@google.com (Richie Foreman)'
 
-"""
-    This simple Python AppEngine demonstrates the workflow for
-    provisioning a resold customer, step-by-step
-
-    With minor modifications, this code could be ported to another language,
-    or alternatively deployed on a traditional server.
-
-    Setup:
-    - Install the AppEngine SDK.
-    - Install the Google API Python Client
-      (https://code.google.com/p/google-api-php-client/)
-    - Generate an OAuth2 project.
-      ( https://code.google.com/apis/console/ )
-    - From the services tab, activate the following:
-        "Google Apps Reseller API"
-        "Admin SDK"
-        "Site Verification API"
-    - Add a new API Client ID from the console
-      - Select the service account mechanism
-      - Download the p12 private key.
-    - Convert the P12 key into PEM format:
-        "openssl pkcs12 -in xxxxx.p12 -nodes -nocerts > privatekey.pem"
-    - Adjust 'settings.py' to reflect the API Client ID,
-      Service Account Email Address, and private key location.
-    - Authorize the Client ID in the Google Apps Control Panel
-      for the reseller domain.
-      ( Security -> Advanced Settings -> Manage Third Party OAuth )
-
-      For the client name, utilize the Client ID from the API project.
-
-      Add the following scopes:
-        https://www.googleapis.com/auth/apps.order
-        https://www.googleapis.com/auth/siteverification
-        https://apps-apis.google.com/a/feeds/user/
-        https://www.googleapis.com/auth/admin.directory.user
-"""
-
 from apiclient.discovery import build
 from apiclient.http import HttpError
 from google.appengine.api import taskqueue
