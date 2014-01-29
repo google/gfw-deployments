@@ -30,7 +30,7 @@ mod.controller('CustomerController', function ($scope,
             'postalAddress.countryCode': $scope.countryCode,
             'postalAddress.postalCode': $scope.postalCode
         }).success(function (data, status, headers, config) {
-            CurrentDomainService.set($scope.domain);
+            CurrentDomainService.set($scope.customerDomain);
             $location.path("/step2");
         }).error(function(data, status, headers, config) {
             AlertChannelService.Alert(data.message);
