@@ -1,4 +1,4 @@
-mod = angular.module(_SERVICES_);
+mod = angular.module(SERVICES);
 
 mod.factory("loadingInterceptor", function ($q, HttpLoadingChannelService) {
 

@@ -4,6 +4,38 @@ An end to end demonstration application that provisions a resold Google Apps dom
 
 ## Getting Started
 
+### Prerequisites
+
+Generate an OAuth2 project. ( https://code.google.com/apis/console/ )
+
+From the services tab, activate the following:
+
+  - "Google Apps Reseller API"
+  - "Admin SDK"
+  -  "Site Verification API"
+
+Add a new API Client ID from the console:
+
+  - Select the service account mechanism
+  - Download the p12 private key.
+
+Convert the P12 key into PEM format:
+    
+    openssl pkcs12 -in xxxxx.p12 -nodes -nocerts > privatekey.pem
+
+Adjust 'settings.py' to reflect the API Client ID, Service Account Email Address, and private key location.
+
+Authorize the Client ID in the Google Apps Control Panel for the reseller domain.
+  ( Security -> Advanced Settings -> Manage Third Party OAuth )
+
+For the client name, utilize the Client ID from the API project.
+
+Add the following scopes:
+  -  https://www.googleapis.com/auth/apps.order
+  -  https://www.googleapis.com/auth/siteverification
+  -  https://apps-apis.google.com/a/feeds/user/
+  -  https://www.googleapis.com/auth/admin.directory.user
+
 ### Requirements
 
 - NPM - Node Package Manager, installs with NodeJS (http://nodejs.org)

@@ -1,4 +1,4 @@
-mod = angular.module(_SERVICES_);
+mod = angular.module(SERVICES);
 
 mod.factory("HttpLoadingChannelService", function ($rootScope) {
     var HTTP_LOADING_CHANNEL_SERVICE_MESSAGE = "$__HttpLoadingChannelService";

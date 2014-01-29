@@ -1,4 +1,4 @@
-var mod = angular.module(_APP_);
+var mod = angular.module(APP);
 
 mod.config([
     '$routeProvider',
@@ -11,8 +11,7 @@ mod.config([
         $locationProvider.html5Mode(true);
         $routeProvider.
             when('/', {
-                templateUrl: 'partials/index.html',
-                controller: 'HomeController'
+                templateUrl: 'partials/index.html'
             }).
             when('/step1', {
                 templateUrl: 'partials/customer.html',
@@ -51,8 +50,7 @@ mod.config([
                 controller: 'DriveStorageLicenseController'
             }).
             when('/done', {
-                templateUrl: 'partials/done.html',
-                controller: 'DoneController'
+                templateUrl: 'partials/done.html'
             }).
             otherwise({ redirectTo: '/' });
     }

@@ -1,12 +1,4 @@
-mod = angular.module(_CONTROLLERS_);
-
-mod.controller('HomeController', function ($scope, $http) {
-    // Nothing here, move along.
-});
-
-mod.controller("DoneController", function($scope) {
-    // Nothing here, move along.
-});
+mod = angular.module(CONTROLLERS);
 
 mod.controller('CustomerController', function ($scope,
                                                $http,
@@ -38,7 +30,7 @@ mod.controller('CustomerController', function ($scope,
             'postalAddress.countryCode': $scope.countryCode,
             'postalAddress.postalCode': $scope.postalCode
         }).success(function (data, status, headers, config) {
-            CurrentDomainService.set($scope.domain);
+            CurrentDomainService.set($scope.customerDomain);
             $location.path("/step2");
         }).error(function(data, status, headers, config) {
             AlertChannelService.Alert(data.message);
