@@ -78,10 +78,12 @@ class ResellerPlanName(object):
             cls.Trial
         ]
 
+
 class ResellerDeletionType(object):
     Cancel = "cancel"
     Downgrade = "downgrade"
     Suspend = "suspend"
+
 
 class ResellerRenewalType(object):
 

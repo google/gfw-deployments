@@ -17,8 +17,10 @@ def csrf_protect(func):
         if not instance.app._ENABLE_CSRF:
             return func(instance)
 
-        token = instance.request.get("token", None) or \
-                instance.request.headers.get("X-Xsrf-Token", None)
+        # the token can come from a get param or a header.
+        token_param = instance.request.get("token", None)
+        token_header = instance.request.headers.get("X-Xsrf-Token", None)
+        token = token_param or token_header
 
         if token is not None and token == instance.get_csrf_token():
             instance.regenerate_csrf_token()
