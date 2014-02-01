@@ -2,6 +2,20 @@
 
 An end to end demonstration application that provisions a resold Google Apps domain.
 
+## DISCLAIMER
+
+   (i) GOOGLE INC. ("GOOGLE") PROVIDES YOU ALL CODE HEREIN "AS IS" WITHOUT ANY
+   WARRANTIES OF ANY KIND, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE, INCLUDING,
+   WITHOUT LIMITATION, ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NON-INFRINGEMENT; AND
+
+   (ii) IN NO EVENT WILL GOOGLE BE LIABLE FOR ANY LOST REVENUES, PROFIT OR DATA
+   , OR ANY DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE
+   DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, EVEN IF
+   GOOGLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, ARISING OUT OF
+   THE USE OR INABILITY TO USE, MODIFICATION OR DISTRIBUTION OF THIS CODE OR
+   ITS DERIVATIVES.
+
 ## Getting Started
 
 ### Prerequisites
@@ -42,18 +56,25 @@ Add the following scopes:
 - Bower, installed by NPM
 - Grunt, installed by NPM
 - Google App Engine SDK
+- (Mac Users Only) XCode Command Line Tools.
+
+### Mac OS X Users Only
+
+Install the XCode command line tools
+
+    xcode-select --install
 
 ### Install the Grunt CLI
 
 Install grunt-cli globally.
 
-    npm install -g grunt-cli
+    sudo npm install -g grunt-cli
 
 ### Install Bower
 
 Bower is a package manager for client-side javascript
 
-    npm install -g bower
+    sudo npm install -g bower
 
 ### Installing Dev Dependencies
 

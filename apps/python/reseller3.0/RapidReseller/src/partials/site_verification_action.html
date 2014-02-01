@@ -3,8 +3,7 @@
     All Google Apps domains MUST be verified.  Depending upon your capabilities,
     one of these options may make more sense than the other.
 </p>
-
-<div ng-switch="verificationStatus">
+<div ng-switch="siteVerificationAction.verificationStatus">
     <pre ng-switch-when="-1">Site Verification Status: Working...</pre>
     <pre ng-switch-when="0">Site Verification Status: FAILED!</pre>
     <pre ng-switch-when="1">Site Verification Status: OK!</pre>
@@ -12,5 +11,5 @@
 </div>
 <p>Prior to leveraging Google Apps, MX records will need to be created for the domain.</p>
 
-<a ng-click="doVerification()" class="btn btn-default">Try Again..</a>
-<a ng-click="next()" class="btn btn-primary">Next &raquo;</a>
+<a ng-click="siteVerificationAction.doVerification()" class="btn btn-default">Try Again..</a>
+<a ng-click="siteVerificationAction.next()" class="btn btn-primary">Next &raquo;</a>

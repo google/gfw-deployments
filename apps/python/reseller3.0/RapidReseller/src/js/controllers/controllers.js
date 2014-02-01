@@ -1,36 +1,37 @@
 mod = angular.module(CONTROLLERS);
 
-mod.controller('CustomerController', function ($scope,
-                                               $http,
+mod.controller('CustomerController', function ($http,
                                                $location,
                                                AlertChannelService,
                                                CurrentDomainService) {
-    // Set a sensible default domain.
-    $scope.customerDomain = "demo-"+new Date().getTime()+".resold.richieforeman.net";
-    $scope.alternateEmail = "nobody@google.com";
-    $scope.phoneNumber = "212.565.0000";
-    $scope.contactName = "A Googler";
-    $scope.organizationName = "Google Demo Company";
-    $scope.locality = "NYC";
-    $scope.region = "NY";
-    $scope.countryCode = "US";
-    $scope.postalCode = "11101";
-    $scope.addressLine1 = "76 9th Ave";
 
-    $scope.submit = function() {
+    var self = this;
+    // Set a sensible default domain.
+    self.customerDomain = "demo-"+new Date().getTime()+".resold.richieforeman.net";
+    self.alternateEmail = "nobody@google.com";
+    self.phoneNumber = "212.565.0000";
+    self.contactName = "A Googler";
+    self.organizationName = "Google Demo Company";
+    self.locality = "NYC";
+    self.region = "NY";
+    self.countryCode = "US";
+    self.postalCode = "11101";
+    self.addressLine1 = "76 9th Ave";
+
+    self.submit = function() {
         $http.post("/api/createCustomer", {
-            'domain': $scope.customerDomain,
-            'alternateEmail': $scope.alternateEmail,
-            'phoneNumber': $scope.phoneNumber,
-            'postalAddress.contactName': $scope.contactName,
-            'postalAddress.addressLine1': $scope.addressLine1,
-            'postalAddress.organizationName': $scope.organizationName,
-            'postalAddress.locality': $scope.locality,
-            'postalAddress.region': $scope.region,
-            'postalAddress.countryCode': $scope.countryCode,
-            'postalAddress.postalCode': $scope.postalCode
+            'domain': this.customerDomain,
+            'alternateEmail': this.alternateEmail,
+            'phoneNumber': this.phoneNumber,
+            'postalAddress.contactName': this.contactName,
+            'postalAddress.addressLine1': this.addressLine1,
+            'postalAddress.organizationName': this.organizationName,
+            'postalAddress.locality': this.locality,
+            'postalAddress.region': this.region,
+            'postalAddress.countryCode': this.countryCode,
+            'postalAddress.postalCode': this.postalCode
         }).success(function (data, status, headers, config) {
-            CurrentDomainService.set($scope.customerDomain);
+            CurrentDomainService.set(self.customerDomain);
             $location.path("/step2");
         }).error(function(data, status, headers, config) {
             AlertChannelService.Alert(data.message);
@@ -38,18 +39,18 @@ mod.controller('CustomerController', function ($scope,
     };
 });
 
-mod.controller('SubscriptionController', function ($scope,
-                                                   $rootScope,
+mod.controller('SubscriptionController', function ($rootScope,
                                                    $http,
                                                    $location,
                                                    AlertChannelService,
                                                    CurrentDomainService) {
+    var self = this;
 
-    $scope.numberOfSeats = 5;
+    self.numberOfSeats = 5;
 
-    $scope.submit = function () {
+    self.submit = function () {
         $http.post("/api/createSubscription", {
-            numberOfSeats: $scope.numberOfSeats,
+            numberOfSeats: self.numberOfSeats,
             domain: CurrentDomainService.get()
         }).success(function (data, status, headers, config) {
             $location.path("/step3");
@@ -59,32 +60,33 @@ mod.controller('SubscriptionController', function ($scope,
     };
 });
 
-mod.controller("SiteVerificationConfirmController", function($scope,
-                                                             $http,
-                                                             $location,
+mod.controller("SiteVerificationConfirmController", function($location,
                                                              SiteVerificationTokenCacheService) {
 
-    var verificationInfo = SiteVerificationTokenCacheService.getData();
-    $scope.verificationInfo = verificationInfo;
+    var self = this;
 
-    $scope.next = function() {
+    self.verificationInfo = SiteVerificationTokenCacheService.getData();
+
+    self.next = function() {
         $location.path("/step4");
     };
 
 });
 
-mod.controller("UserCreateController", function($scope, $location) {
-    $scope.next = function() {
+mod.controller("UserCreateController", function($location) {
+    var self = this;
+    self.next = function() {
         $location.path("/step5_confirm");
     };
 });
 
-mod.controller("DriveStorageSubscriptionController", function($scope,
-                                                              $http,
+mod.controller("DriveStorageSubscriptionController", function($http,
                                                               $location,
                                                               AlertChannelService,
                                                               CurrentDomainService) {
-    $scope.submit = function () {
+    var self = this;
+
+    self.submit = function () {
         $http.post("/api/createDriveStorageSubscription", {
             domain: CurrentDomainService.get()
         }).success(function (data, status, headers, config) {
@@ -95,12 +97,13 @@ mod.controller("DriveStorageSubscriptionController", function($scope,
     };
 });
 
-mod.controller("DriveStorageLicenseController", function ($scope,
-                                                          $http,
+mod.controller("DriveStorageLicenseController", function ($http,
                                                           $location,
                                                           AlertChannelService,
                                                           CurrentDomainService) {
-    $scope.submit = function () {
+    var self = this;
+
+    self.submit = function () {
         $http.post("/api/assignDriveLicense", {
             domain: CurrentDomainService.get()
         }).success(function (data, status, headers, config) {
@@ -111,35 +114,40 @@ mod.controller("DriveStorageLicenseController", function ($scope,
     };
 });
 
-mod.controller("UserCreateConfirmController", function($scope,
-                                                       $location,
+mod.controller("UserCreateConfirmController", function($location,
                                                        $http,
                                                        AlertChannelService,
                                                        CurrentDomainService) {
-    $scope.userStatus = -1;
+    var self = this;
+    self.userStatus = -1;
 
-    $http.post("/api/createUser", {
-        domain: CurrentDomainService.get()
-    }).success(function (data, status, headers, config) {
-        $scope.userStatus = 1;
-        $scope.username = data.username;
-        $scope.password = data.password;
-    }).error(function (data, status, headers, config) {
-        $scope.userStatus = 0;
-        AlertChannelService.Alert("Error when creating user: " + data.message);
-    });
+    self.createUser = function () {
+        $http.post("/api/createUser", {
+            domain: CurrentDomainService.get()
+        }).success(function (data, status, headers, config) {
+            self.userStatus = 1;
+            self.username = data.username;
+            self.password = data.password;
+        }).error(function (data, status, headers, config) {
+            self.userStatus = 0;
+            AlertChannelService.Alert("Error when creating user: " + data.message);
+        });
+    };
 
-    $scope.next = function() {
+    self.next = function() {
         $location.path("/step6");
     };
+
+    // Create a user as the controller loads.
+    self.createUser();
 });
 
 
-mod.controller("SiteVerificationActionController", function($scope,
-                                                            $http,
+mod.controller("SiteVerificationActionController", function($http,
                                                             $location,
                                                             SiteVerificationTokenCacheService,
                                                             CurrentDomainService) {
+    var self = this;
 
     var verificationInfo = SiteVerificationTokenCacheService.getData();
 
@@ -149,26 +157,26 @@ mod.controller("SiteVerificationActionController", function($scope,
         FAILED: 0
     };
 
-    $scope.next = function() {
+    self.next = function() {
         $location.path("/step5");
     };
 
-    $scope.doVerification = function() {
-        $scope.verificationStatus = STATUS.WORKING;
+    self.doVerification = function() {
+        self.verificationStatus = STATUS.WORKING;
         $http.post("/api/testValidation", {
             verification_type: verificationInfo.verification_type,
             verification_identifier: verificationInfo.verification_identifier,
             verification_method: verificationInfo.verification_method,
             domain: CurrentDomainService.get()
         }).success(function (data, status, headers, config) {
-           $scope.verificationStatus = STATUS.OK;
+           self.verificationStatus = STATUS.OK;
         }).error(function(data, status, headers, config) {
-            $scope.verificationStatus = STATUS.FAILED;
+            self.verificationStatus = STATUS.FAILED;
         });
     };
 
     // attempt verification as the controller loads...
-    $scope.doVerification();
+    self.doVerification();
 
 });
 
@@ -179,9 +187,10 @@ mod.controller('SiteVerificationController', function ($scope,
                                                        AlertChannelService,
                                                        SiteVerificationTokenCacheService,
                                                        CurrentDomainService) {
+    var self = this;
 
     // Display all of the options
-    $scope.verificationMethods = [
+    self.verificationMethods = [
         {
             value: "FILE",
             type: "SITE",
@@ -222,19 +231,19 @@ mod.controller('SiteVerificationController', function ($scope,
     ];
 
     // Set a sensible default.
-    $scope.verificationMethod = $scope.verificationMethods[0];
+    self.verificationMethod = self.verificationMethods[0];
 
     // listen for changes to the verificationMethod and regen the identifier.
     $scope.$watch('verificationMethod', function () {
-        $scope.verificationIdentifier = $scope.verificationMethod.prefix +
-            CurrentDomainService.get();
+        var prefix = self.verificationMethod.prefix;
+        self.verificationIdentifier = prefix + CurrentDomainService.get();
     });
 
-    $scope.submit = function() {
+    self.submit = function() {
         $http.post("/api/getSiteValidationToken", {
-            verificationMethod: $scope.verificationMethod.value,
-            verificationType: $scope.verificationMethod.type,
-            verificationIdentifier: $scope.verificationIdentifier,
+            verificationMethod: self.verificationMethod.value,
+            verificationType: self.verificationMethod.type,
+            verificationIdentifier: self.verificationIdentifier,
             domain: CurrentDomainService.get()
         }).success(function (data, status, headers, config) {
             SiteVerificationTokenCacheService.setData(data);

@@ -2,22 +2,6 @@
 #
 # Copyright 2013 Google Inc. All Rights Reserved.
 
-"""
-      DISCLAIMER:
-
-   (i) GOOGLE INC. ("GOOGLE") PROVIDES YOU ALL CODE HEREIN "AS IS" WITHOUT ANY
-   WARRANTIES OF ANY KIND, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE, INCLUDING,
-   WITHOUT LIMITATION, ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
-   PARTICULAR PURPOSE AND NON-INFRINGEMENT; AND
-
-   (ii) IN NO EVENT WILL GOOGLE BE LIABLE FOR ANY LOST REVENUES, PROFIT OR DATA,
-   OR ANY DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE
-   DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, EVEN IF
-   GOOGLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, ARISING OUT OF
-   THE USE OR INABILITY TO USE, MODIFICATION OR DISTRIBUTION OF THIS CODE OR
-   ITS DERIVATIVES.
-   """
-
 __author__ = 'richieforeman@google.com (Richie Foreman)'
 
 from google.appengine.api import memcache
@@ -33,8 +17,10 @@ def csrf_protect(func):
         if not instance.app._ENABLE_CSRF:
             return func(instance)
 
-        token = instance.request.get("token", None) or \
-                instance.request.headers.get("X-Xsrf-Token", None)
+        # the token can come from a get param or a header.
+        token_param = instance.request.get("token", None)
+        token_header = instance.request.headers.get("X-Xsrf-Token", None)
+        token = token_param or token_header
 
         if token is not None and token == instance.get_csrf_token():
             instance.regenerate_csrf_token()

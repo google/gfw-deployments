@@ -15,39 +15,48 @@ mod.config([
             }).
             when('/step1', {
                 templateUrl: 'partials/customer.html',
-                controller: 'CustomerController'
+                controller: 'CustomerController',
+                controllerAs: 'customer'
             }).
             when('/step2', {
                 templateUrl: 'partials/subscription.html',
-                controller: 'SubscriptionController'
+                controller: 'SubscriptionController',
+                controllerAs: 'subscription'
             }).
             when('/step3', {
-                templateUrl: 'partials/site_validation.html',
-                controller: 'SiteVerificationController'
+                templateUrl: 'partials/site_verification.html',
+                controller: 'SiteVerificationController',
+                controllerAs: 'siteVerification'
             }).
             when("/step3_confirm", {
-                templateUrl: 'partials/site_validation_confirm.html',
-                controller: 'SiteVerificationConfirmController'
+                templateUrl: 'partials/site_verification_confirm.html',
+                controller: 'SiteVerificationConfirmController',
+                controllerAs: 'siteVerificationConfirm'
             }).
             when('/step4', {
                 templateUrl: 'partials/site_verification_action.html',
-                controller: 'SiteVerificationActionController'
+                controller: 'SiteVerificationActionController',
+                controllerAs: 'siteVerificationAction'
             }).
             when('/step5', {
                 templateUrl: 'partials/user_create.html',
-                controller: 'UserCreateController'
+                controller: 'UserCreateController',
+                controllerAs: 'userCreate'
             }).
             when('/step5_confirm', {
                 templateUrl: 'partials/user_create_confirm.html',
-                controller: 'UserCreateConfirmController'
+                controller: 'UserCreateConfirmController',
+                controllerAs: 'userCreateConfirm'
             }).
             when('/step6', {
                 templateUrl: 'partials/drive_storage_create.html',
-                controller: 'DriveStorageSubscriptionController'
+                controller: 'DriveStorageSubscriptionController',
+                controllerAs: 'driveStorageCreate'
             }).
             when('/step7', {
                 templateUrl: 'partials/drive_storage_assign.html',
-                controller: 'DriveStorageLicenseController'
+                controller: 'DriveStorageLicenseController',
+                controllerAs: 'driveStorageAssign'
             }).
             when('/done', {
                 templateUrl: 'partials/done.html'
