@@ -166,7 +166,7 @@ class StepFourHandler(ApiHandler):
                         http=get_authorized_http())
 
         verification_type = self.json_data.get("verification_type")
-        verification_ident = self.json_data.get("verification_identifier")
+        verification_identifier = self.json_data.get("verification_identifier")
         verification_method = self.json_data.get("verification_method")
 
         # try to do a verification,
@@ -176,7 +176,7 @@ class StepFourHandler(ApiHandler):
             body={
                 'site': {
                     'type': verification_type,
-                    'identifier': verification_ident
+                    'identifier': verification_identifier
                 },
                 'verificationMethod': verification_method
             }
