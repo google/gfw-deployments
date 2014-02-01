@@ -8,14 +8,14 @@
     site for more information about the various verification methods.
 </p>
 
-<form name="siteVerification" class="form-horizontal" ng-submit="submit()">
+<form name="siteVerificationForm" class="form-horizontal" ng-submit="siteVerification.submit()">
     <div class="form-group">
         <label class="control-label col-sm-2">Verification Method</label>
         <div class="col-sm-5">
             <select name="verificationMethod"
                     class="form-control"
-                    ng-model="verificationMethod"
-                    ng-options="v as v.label for v in verificationMethods"></select>
+                    ng-model="siteVerification.verificationMethod"
+                    ng-options="v as v.label for v in siteVerification.verificationMethods"></select>
         </div>
     </div>
     <div class="form-group">
@@ -23,7 +23,7 @@
             Verification Type
         </label>
         <div class="col-sm-5">
-            <p class="form-control-static">{{verificationMethod.type}}</p>
+            <p class="form-control-static">{{siteVerification.verificationMethod.type}}</p>
         </div>
     </div>
     <div class="form-group">
@@ -31,7 +31,7 @@
             Verification Identifier
         </label>
         <div class="col-sm-5">
-            <p class="form-control-static">{{verificationIdentifier}}</p>
+            <p class="form-control-static">{{siteVerification.verificationIdentifier}}</p>
         </div>
     </div>
     <div class="form-group">
@@ -42,7 +42,7 @@
             <input type="submit"
                    value="Next &raquo;"
                    class="btn btn-primary"
-                   ng-disabled="siteVerification.$invalid">
+                   ng-disabled="siteVerificationForm.$invalid">
             <loading-indicator></loading-indicator>
         </div>
     </div>

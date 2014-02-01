@@ -1,11 +1,11 @@
-<div ng-switch="userStatus">
+<div ng-switch="userCreateConfirm.userStatus">
     <div ng-switch-default>
-        Working...
+        Working....
     </div>
     <div ng-switch-when="0">
         <h1>User Creation Failed!</h1>
         <a href="/" class="btn btn-default">Start Over &raquo;</a>
-        <a ng-click="next()" class="btn btn-primary">(Optional) Allocate and Assign Drive Seats &raquo;</a>
+        <a ng-click="userCreateConfirm.next()" class="btn btn-primary">(Optional) Allocate and Assign Drive Seats &raquo;</a>
     </div>
     <div ng-switch-when="1">
         <h1>User Created!</h1>
@@ -17,18 +17,25 @@
             </a>
         </p>
 
-        <p>
-            Username
-            <input type="text" onClick="this.select();" value="{{username}}">
-        </p>
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label class="control-label col-sm-2">Username</label>
+                <div class="col-sm-5">
+                    <input type="text" class="form-control" onClick="this.select();" value="{{userCreateConfirm.username}}">
+                </div>
+            </div>
 
-        <p>
-            Password
-            <input type="text" onClick="this.select();"value="{{password}}">
-        </p>
+            <div class="form-group">
+                <label class="control-label col-sm-2">Password</label>
+                <div class="col-sm-5">
+                    <input type="text" class="form-control" onClick="this.select();" value="{{userCreateConfirm.password}}">
+                </div>
+            </div>
+
+        </form>
 
         <a href="/" class="btn btn-default">Start Over &raquo;</a>
-        <a ng-click="next()" class="btn btn-primary">(Optional) Allocate and Assign Drive Seats &raquo;</a>
+        <a ng-click="userCreateConfirm.next()" class="btn btn-primary">(Optional) Allocate and Assign Drive Seats &raquo;</a>
     </div>
 </div>
 

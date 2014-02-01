@@ -9,30 +9,30 @@
     <p>
         All subscriptions can be billed yearly, or on a monthly basis.
     </p>
-        <form name="subscription" method="POST" ng-submit="submit()" class="form-horizontal">
-                <div class="form-group" ng-class="{'has-error': subscription.$invalid}">
-                    <label class="control-label col-sm-2">Seat Count</label>
-                    <div class="col-sm-5">
-                       <input type="text"
-                           class="form-control"
-                           name="numberOfSeats"
-                           ng-model="numberOfSeats"
-                           integer
-                           ng-required="true">
-                    </div>
+        <form name="subscriptionForm" method="POST" ng-submit="subscription.submit()" class="form-horizontal">
+            <div class="form-group" ng-class="{'has-error': subscriptionForm.numberOfSeats.$invalid}">
+                <label class="control-label col-sm-2">Seat Count</label>
+                <div class="col-sm-5">
+                   <input type="text"
+                       class="form-control"
+                       name="numberOfSeats"
+                       ng-model="subscription.numberOfSeats"
+                       integer
+                       ng-required="true">
+                </div>
 
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2">
+                    ...
                 </div>
-                <div class="form-group">
-                    <div class="col-sm-2">
-                        ...
-                    </div>
-                    <div class="col-sm-5">
-                        <input type="submit"
-                               value="Next &raquo;"
-                               class="btn btn-primary"
-                               ng-disabled="subscription.$invalid">
-                        <loading-indicator></loading-indicator>
-                    </div>
+                <div class="col-sm-5">
+                    <input type="submit"
+                           value="Next &raquo;"
+                           class="btn btn-primary"
+                           ng-disabled="subscriptionForm.$invalid">
+                    <loading-indicator></loading-indicator>
                 </div>
+            </div>
         </form>
     </p>
