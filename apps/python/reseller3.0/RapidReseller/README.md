@@ -56,18 +56,25 @@ Add the following scopes:
 - Bower, installed by NPM
 - Grunt, installed by NPM
 - Google App Engine SDK
+- (Mac Users Only) XCode Command Line Tools.
+
+### Mac OS X Users Only
+
+Install the XCode command line tools
+
+    xcode-select --install
 
 ### Install the Grunt CLI
 
 Install grunt-cli globally.
 
-    npm install -g grunt-cli
+    sudo npm install -g grunt-cli
 
 ### Install Bower
 
 Bower is a package manager for client-side javascript
 
-    npm install -g bower
+    sudo npm install -g bower
 
 ### Installing Dev Dependencies
 
