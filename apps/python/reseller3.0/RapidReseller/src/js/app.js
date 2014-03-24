@@ -5,11 +5,11 @@ var FILTERS = APP + '.filters';
 var SERVICES = APP + '.services';
 
 angular.module(APP, [
-    CONTROLLERS,
-    DIRECTIVES,
-    FILTERS,
-    SERVICES,
-    'ngRoute'
+  CONTROLLERS,
+  DIRECTIVES,
+  FILTERS,
+  SERVICES,
+  'ngRoute'
 ]);
 
 angular.module(CONTROLLERS, []);

@@ -1,10 +1,12 @@
 body {
-    padding-top:60px;
-    padding-bottom:20px;
+    padding-top: 60px;
+    padding-bottom: 20px;
 }
+
 .loading-indicator {
     padding: 1em;
 }
+
 @-webkit-keyframes blink {
     0% {
         opacity: .4;
