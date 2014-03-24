@@ -1,0 +1,162 @@
+<h1>Step 1: Enter a New Customer Domain</h1>
+<p>
+    Each resold customer must be provisioned with a primary domain.
+</p>
+<p>
+<form name="domainForm" ng-submit="customer.submit()" novalidate class="form-horizontal" role="form">
+    <div class="form-group" ng-class="{'has-error': domainForm.customerDomain.$invalid}">
+        <label class="control-label input-lg col-sm-4">Customer Domain</label>
+        <div class="col-sm-8">
+            <input class="form-control input-lg"
+                   type="text"
+                   name="customerDomain"
+                   ng-model="customer.customerDomain"
+                   ng-required="true"
+                   required
+                   ng-minlength="3"
+                   ng-pattern="/.*\..*/">
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Alternate Email</label>
+
+                <div class="col-sm-5" ng-class="{'has-error': domainForm.alternateEmail.$invalid}">
+                    <input class="form-control"
+                           type="text"
+                           name="alternateEmail"
+                           ng-model="customer.alternateEmail"
+                           ng-required="true"
+                           required
+                           ng-minlength="3">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Phone Number</label>
+
+                <div class="col-sm-5" ng-class="{'has-error': domainForm.phoneNumber.$invalid}">
+                    <input class="form-control"
+                           type="text"
+                           name="phoneNumber"
+                           ng-model="customer.phoneNumber"
+                           ng-required="true"
+                           required
+                           ng-minlength="3">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">Contact Name</label>
+
+                <div class="col-sm-5" ng-class="{'has-error': domainForm.contactName.$invalid}">
+                    <input class="form-control"
+                           type="text"
+                           name="contactName"
+                           ng-model="customer.contactName"
+                           ng-required="true"
+                           required
+                           ng-minlength="3">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">Organization Name</label>
+
+                <div class="col-sm-5" ng-class="{'has-error': domainForm.organizationName.$invalid}">
+                    <input class="form-control"
+                           type="text"
+                           name="organizationName"
+                           ng-model="customer.organizationName"
+                           ng-required="true"
+                           required
+                           ng-minlength="3">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">Address Line 1</label>
+
+                <div class="col-sm-5" ng-class="{'has-error': domainForm.addressLine1.$invalid}">
+                    <input class="form-control"
+                           type="text"
+                           name="addressLine1"
+                           ng-model="customer.addressLine1"
+                           ng-required="true"
+                           required
+                           max-length="2">
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">Locality</label>
+
+                <div class="col-sm-5" ng-class="{'has-error': domainForm.locality.$invalid}">
+                    <input class="form-control"
+                           type="text"
+                           name="locality"
+                           ng-model="customer.locality"
+                           ng-required="true"
+                           required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">Region</label>
+
+                <div class="col-sm-5" ng-class="{'has-error': domainForm.region.$invalid}">
+                    <input class="form-control"
+                           type="text"
+                           name="region"
+                           ng-model="customer.region"
+                           ng-required="true"
+                           required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">Country Code</label>
+
+                <div class="col-sm-5" ng-class="{'has-error': domainForm.countryCode.$invalid}">
+                    <input class="form-control"
+                           type="text"
+                           name="countryCode"
+                           ng-model="customer.countryCode"
+                           ng-required="true"
+                           required
+                           max-length="2">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">Postal Code</label>
+
+                <div class="col-sm-5" ng-class="{'has-error': domainForm.postalCode.$invalid}">
+                    <input class="form-control"
+                           type="text"
+                           name="postalCode"
+                           ng-model="customer.postalCode"
+                           ng-required="true"
+                           required
+                           max-length="2">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <label class="control-label col-sm-4"></label>
+        <div class="col-sm-5">
+            <input type="submit" value="Next &raquo;" class="btn btn-primary" ng-disabled="domainForm.$invalid">
+            <loading-indicator></loading-indicator>
+        </div>
+
+    </div>
+
+
+
+</form>
+</p>
