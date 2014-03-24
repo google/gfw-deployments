@@ -19,3 +19,7 @@ apps/python/reseller3.0/RapidReseller/node_modules
 apps/python/reseller3.0/RapidReseller/static/js
 apps/python/reseller3.0/RapidReseller/static/css
 settings_local.py
+*bower_components*
+*node_modules*
+apps/java/RapidReseller/war/static/css
+apps/java/RapidReseller/war/static/js

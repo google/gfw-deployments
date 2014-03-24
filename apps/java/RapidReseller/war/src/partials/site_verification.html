@@ -1,0 +1,49 @@
+<h1>Step 3: Verify the Domain</h1>
+<p>
+    The domain will need to be validated using one of the following methods.
+    Depending upon your application, and access to customer DNS records,
+    one of these may make more sense than the other.
+
+    See the <a href="https://developers.google.com/site-verification/v1/getting_started#tokens">Google Developers</a>
+    site for more information about the various verification methods.
+</p>
+
+<form name="siteVerificationForm" class="form-horizontal" ng-submit="siteVerification.submit()">
+    <div class="form-group">
+        <label class="control-label col-sm-2">Verification Method</label>
+        <div class="col-sm-5">
+            <select name="verificationMethod"
+                    class="form-control"
+                    ng-model="siteVerification.verificationMethod"
+                    ng-options="v as v.label for v in siteVerification.verificationMethods"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-sm-2">
+            Verification Type
+        </label>
+        <div class="col-sm-5">
+            <p class="form-control-static">{{siteVerification.verificationMethod.type}}</p>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-sm-2">
+            Verification Identifier
+        </label>
+        <div class="col-sm-5">
+            <p class="form-control-static">{{siteVerification.verificationIdentifier}}</p>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-2">
+
+        </div>
+        <div class="col-sm-5">
+            <input type="submit"
+                   value="Next &raquo;"
+                   class="btn btn-primary"
+                   ng-disabled="siteVerificationForm.$invalid">
+            <loading-indicator></loading-indicator>
+        </div>
+    </div>
+</form>

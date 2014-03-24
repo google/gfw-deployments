@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
+	<servlet>
+		<servlet-name>IndexServlet</servlet-name>
+		<servlet-class>com.richieforeman.rapidreseller.IndexServlet</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>CreateCustomer</servlet-name>
+		<servlet-class>com.richieforeman.rapidreseller.CreateCustomerServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+		<servlet-name>CreateSubscription</servlet-name>
+		<servlet-class>com.richieforeman.rapidreseller.CreateSubscriptionServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+		<servlet-name>GetSiteValidationToken</servlet-name>
+		<servlet-class>com.richieforeman.rapidreseller.GetSiteValidationTokenServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+	    <servlet-name>TestSiteValidationToken</servlet-name>
+	    <servlet-class>com.richieforeman.rapidreseller.TestSiteValidationTokenServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+	    <servlet-name>CreateUser</servlet-name>
+	    <servlet-class>com.richieforeman.rapidreseller.CreateUserServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+	    <servlet-name>CreateDriveStorageSubscription</servlet-name>
+	    <servlet-class>com.richieforeman.rapidreseller.CreateDriveStorageSubscriptionServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+	    <servlet-name>AssignDriveLicense</servlet-name>
+	    <servlet-class>com.richieforeman.rapidreseller.AssignDriveLicenseServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>CreateCustomer</servlet-name>
+		<url-pattern>/api/createCustomer</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>CreateSubscription</servlet-name>
+		<url-pattern>/api/createSubscription</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>GetSiteValidationToken</servlet-name>
+		<url-pattern>/api/getSiteValidationToken</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+	    <servlet-name>TestSiteValidationToken</servlet-name>
+	    <url-pattern>/api/testValidation</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+	    <servlet-name>CreateUser</servlet-name>
+	    <url-pattern>/api/createUser</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+	    <servlet-name>CreateDriveStorageSubscription</servlet-name>
+	    <url-pattern>/api/createDriveStorageSubscription</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+	    <servlet-name>AssignDriveLicense</servlet-name>
+	    <url-pattern>/api/assignDriveLicense</url-pattern>
+	</servlet-mapping>
+	
+	
+	<servlet-mapping>
+		<servlet-name>IndexServlet</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+</web-app>
