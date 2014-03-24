@@ -1,5 +1,5 @@
-application: google:rapid-reseller
-version: 1
+application: google.com:rapid-reseller
+version: new
 runtime: python27
 threadsafe: yes
 api_version: 1
@@ -17,17 +17,15 @@ handlers:
   secure: always
 
 - url: /tasks/.*
-  script: tasks.wsgi
+  script: tasks.app
   secure: always
   login: admin
 
 - url: .*
-  script: main.wsgi
+  script: main.app
   secure: always
 
 libraries:
-- name: jinja2
-  version: 2.6
 - name: pycrypto
   version: latest
 
@@ -46,3 +44,11 @@ skip_files:
 - ^(.*/)?.*/RCS/.*
 - ^(.*/)?\..*
 - ^(.*/)?.*\.less$
+
+# exclude node, bower, and non-compiled JS.
+- ^(.*/)?node_modules/.*$
+- ^(.*/)?bower_components/.*$
+- ^(.*/)?src/.*$
+
+# exclude Python unit tests.
+- ^(.*/)?tests/.*$

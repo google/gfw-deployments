@@ -2,360 +2,273 @@
 #
 # Copyright 2013 Google Inc. All Rights Reserved.
 
-"""
-      DISCLAIMER:
-
-   (i) GOOGLE INC. ("GOOGLE") PROVIDES YOU ALL CODE HEREIN "AS IS" WITHOUT ANY
-   WARRANTIES OF ANY KIND, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE, INCLUDING,
-   WITHOUT LIMITATION, ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
-   PARTICULAR PURPOSE AND NON-INFRINGEMENT; AND
-
-   (ii) IN NO EVENT WILL GOOGLE BE LIABLE FOR ANY LOST REVENUES, PROFIT OR DATA,
-   OR ANY DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE
-   DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, EVEN IF
-   GOOGLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, ARISING OUT OF
-   THE USE OR INABILITY TO USE, MODIFICATION OR DISTRIBUTION OF THIS CODE OR
-   ITS DERIVATIVES.
-   """
-
 __author__ = 'richieforeman@google.com (Richie Foreman)'
 
-"""
-    This simple Python AppEngine demonstrates the workflow for
-    provisioning a resold customer, step-by-step
-
-    With minor modifications, this code could be ported to another language,
-    or alternatively deployed on a traditional server.
-
-    Setup:
-    - Install the AppEngine SDK.
-    - Install the Google API Python Client
-      (https://code.google.com/p/google-api-php-client/)
-    - Generate an OAuth2 project.
-      ( https://code.google.com/apis/console/ )
-    - From the services tab, activate the following:
-        "Google Apps Reseller API"
-        "Admin SDK"
-        "Site Verification API"
-    - Add a new API Client ID from the console
-      - Select the service account mechanism
-      - Download the p12 private key.
-    - Convert the P12 key into PEM format:
-        "openssl pkcs12 -in xxxxx.p12 -nodes -nocerts > privatekey.pem"
-    - Adjust 'settings.py' to reflect the API Client ID,
-      Service Account Email Address, and private key location.
-    - Authorize the Client ID in the Google Apps Control Panel
-      for the reseller domain.
-      ( Security -> Advanced Settings -> Manage Third Party OAuth )
-
-      For the client name, utilize the Client ID from the API project.
-
-      Add the following scopes:
-        https://www.googleapis.com/auth/apps.order
-        https://www.googleapis.com/auth/siteverification
-        https://apps-apis.google.com/a/feeds/user/
-        https://www.googleapis.com/auth/admin.directory.user
-"""
-
 from apiclient.discovery import build
-from app import wsgi
+from apiclient.http import HttpError
+from google.appengine.api import taskqueue
+
+from app import ApiHandler
 from app import BaseHandler
+from app import WSGIApplication
 
 from constants import ResellerPlanName
 from constants import ResellerSKU
 from constants import ResellerRenewalType
 from constants import ResellerProduct
 
-from google.appengine.api import taskqueue
-
-import httplib2
-
 import settings
-import time
-from utils import get_credentials
+
+from utils import get_authorized_http
+from utils import csrf_protect
 
 
-@wsgi.route("/")
 class IndexHandler(BaseHandler):
-    def get(self):
-        return self.render_template("templates/index.html")
+  def get(self):
+    # draw the initial baseline template.
+    self.response.out.write(self.render_template("templates/base.html"))
 
 
-@wsgi.route("/step1")
-class StepOneHandler(BaseHandler):
-    def get(self):
+class StepOneHandler(ApiHandler):
+  @csrf_protect
+  def post(self):
+    domain = self.json_data['domain']
+    alternate_email = self.json_data['alternateEmail']
+    phone_number = self.json_data['phoneNumber']
+    contact_name = self.json_data['postalAddress.contactName']
+    organization_name = self.json_data['postalAddress.organizationName']
+    locality = self.json_data['postalAddress.locality']
+    country_code = self.json_data['postalAddress.countryCode']
+    region = self.json_data['postalAddress.region']
+    postal_code = self.json_data['postalAddress.postalCode']
+    address_line_1 = self.json_data['postalAddress.addressLine1']
 
-        # generate a bogus domain name for demo purposes.
-        domain = settings.DOMAIN_TEMPLATE % int(time.time())
+    service = build(serviceName="reseller",
+                    version=settings.RESELLER_API_VERSION,
+                    http=get_authorized_http())
 
-        return self.render_template("templates/step1.html",
-                                    domain=domain)
+    try:
+      method = service.customers().get(customerId=domain).execute()
+      raise Exception("That customer already exists")
+    except HttpError, e:
+      if int(e.resp['status']) != 404:
+        raise
 
-    def post(self):
-        domain = self.request.get('domain')
+    method = service.customers().insert(body={
+      'customerDomain': domain,
+      'alternateEmail': alternate_email,
+      'phoneNumber': phone_number,
+      'postalAddress': {
+        'contactName': contact_name,
+        'organizationName': organization_name,
+        'locality': locality,
+        'countryCode': country_code,
+        'region': region,
+        'postalCode': postal_code,
+        'addressLine1': address_line_1
+      }
+    }).execute()
 
-        credentials = get_credentials(settings.RESELLER_ADMIN)
+    # Mark the domain for deletion in approx 5 days.
+    taskqueue.add(url="/tasks/cleanup",
+                  countdown=settings.DOMAIN_CLEANUP_TIMER,
+                  params={
+                    'domain': domain
+                  })
 
-        http = httplib2.Http()
-        credentials.authorize(http)
-
-        service = build(serviceName="reseller",
-                        version=settings.RESELLER_API_VERSION,
-                        http=http)
-
-        response = service.customers().insert(body={
-            'customerDomain': domain,
-            'alternateEmail': 'nobody@google.com',
-            'phoneNumber': '212.565.0000',
-            'postalAddress': {
-                'contactName': "A Googler",
-                'organizationName': 'Google, Inc',
-                'locality': 'New York City',
-                'countryCode': 'US',
-                'region': 'NY',
-                'postalCode': '10011',
-                'addressLine1': '76 9th Ave'
-            }
-        }).execute(num_retries=5)
-
-        self.session['domain'] = domain
-
-        # Mark the domain for deletion in approx 5 days.
-        taskqueue.add(url="/tasks/cleanup",
-                      name="cleanup__%s" % domain.replace(".", "_"),
-                      countdown=settings.DOMAIN_CLEANUP_TIMER,
-                      params={
-                          'domain': domain
-                      })
-
-        return self.redirect("/step2")
-
-    @wsgi.route("/step2")
-    class StepTwoHandler(BaseHandler):
-        def get(self):
-            return self.render_template("templates/step2.html")
-
-        def post(self):
-
-            credentials = get_credentials(settings.RESELLER_ADMIN)
-
-            http = httplib2.Http()
-            credentials.authorize(http)
-
-            service = build(serviceName="reseller",
-                            version=settings.RESELLER_API_VERSION,
-                            http=http)
-
-            response = service.subscriptions().insert(
-                customerId=self.session['domain'],
-                body={
-                    'customerId': self.session['domain'],
-                    'skuId': ResellerSKU.GoogleApps,
-                    'plan': {
-                        'planName': ResellerPlanName.Flexible,
-                    },
-                    'seats': {
-                        'numberOfSeats': self.request.get("seats"),
-                        'maximumNumberOfSeats': self.request.get("seats")
-                    },
-                    'renewalSettings': {
-                        'renewalType': ResellerRenewalType.PayAsYouGo
-                    },
-                    'purchaseOrderId': 'G00gl39001'
-                }).execute(num_retries=5)
-
-            return self.redirect("/step3")
-
-    @wsgi.route("/step3")
-    class Step3Handler(BaseHandler):
-        def get(self):
-            '''
-            Prompt the user to select a verification method.
-            '''
-            return self.render_template("templates/step3.html")
-
-        def post(self):
-            '''
-            Call the site verification api and fetch the token value.
-            '''
-            credentials = get_credentials(settings.RESELLER_ADMIN)
-
-            http = httplib2.Http()
-            credentials.authorize(http)
-
-            # establish default values.
-            verification_type = "INET_DOMAIN"
-            identifier = self.session['domain']
-            verification_method = self.request.get("verificationMethod")
-
-            # Does the requested verification method fall into the "site" type?
-            if verification_method in settings.SITE_VERIFICATION_METHODS:
-                # a "site" type is chosen, the values are a different.
-                verification_type = "SITE"
-                # site verification methods must begin with http or https
-                identifier = "http://%s" % self.session['domain']
-
-            # build the site verification service.
-            service = build(serviceName="siteVerification",
-                            version="v1",
-                            http=http)
-
-            # fetch a verification token.
-            response = service.webResource().getToken(body={
-                'site': {
-                    'type': verification_type,
-                    'identifier': identifier
-                },
-                'verificationMethod': verification_method
-            }).execute(num_retries=5)
-
-            return self.render_template("templates/step3_confirm.html",
-                                        verification_token=response['token'],
-                                        verification_type=verification_type,
-                                        verification_method=verification_method,
-                                        verification_identifier=identifier)
-
-    @wsgi.route("/step4")
-    class Step4Handler(BaseHandler):
-        def get(self):
-            '''
-            Call the site verification service and see if the
-            token has been fulfilled (e.g. a dns entry added)
-            '''
-
-            credentials = get_credentials(settings.RESELLER_ADMIN)
-
-            http = httplib2.Http()
-            credentials.authorize(http)
-
-            service = build(serviceName="siteVerification",
-                            version="v1",
-                            http=http)
-
-            verification_type = self.request.get("verification_type")
-            verification_ident = self.request.get("verification_identifier")
-            verification_method = self.request.get("verification_method")
-
-            verification_status = None
-            try:
-                # try to do a verification,
-                # which will test the method on the Google server side.
-                service.webResource().insert(
-                    verificationMethod=verification_method,
-                    body={
-                        'site': {
-                            'type': verification_type,
-                            'identifier': verification_ident
-                        },
-                        'verificationMethod': verification_method
-                    }
-                ).execute(num_retries=5)
-                verification_status = True
-            except Exception, e:
-                verification_status = False
-
-            return self.render_template("templates/step4.html",
-                                        verification_status=verification_status)
-
-    @wsgi.route("/step5")
-    class StepFiveHandler(BaseHandler):
-
-        def get(self):
-            return self.render_template("templates/step5.html")
-
-        def post(self):
-            credentials = get_credentials(sub=settings.RESELLER_ADMIN)
-
-            username = "admin@%s" % self.session['domain']
-            password = "P@ssw0rd!!"
-
-            http = httplib2.Http()
-            credentials.authorize(http)
-
-            service = build(serviceName="admin",
-                            version="directory_v1",
-                            http=http)
-
-            # create the user.
-            service.users().insert(body={
-                'primaryEmail': username,
-                'name': {
-                    'givenName': 'Admin',
-                    'familyName': 'Admin',
-                    'fullName': 'Admin Admin'
-                },
-                'isAdmin': True,
-                'suspended': False,
-                'password': password
-            }).execute(num_retries=5)
-
-            # make the user a super admin.
-            service.users().makeAdmin(
-                userKey=username,
-                body={
-                    'status': True
-                }).execute(num_retries=5)
-
-            self.session['username'] = username
-
-            return self.render_template("templates/step5_confirm.html",
-                                        domain=self.session['domain'],
-                                        username=username,
-                                        password=password)
-
-    @wsgi.route("/step6")
-    class StepSixHandler(BaseHandler):
-        def get(self):
-            return self.render_template("templates/step6.html")
-
-        def post(self):
-            credentials = get_credentials(sub=settings.RESELLER_ADMIN)
-            http = httplib2.Http()
-
-            credentials.authorize(http)
-
-            service = build(serviceName="reseller",
-                            version=settings.RESELLER_API_VERSION,
-                            http=http)
-
-            response = service.subscriptions().insert(
-                customerId=self.session['domain'],
-                body={
-                    'customerId': self.session['domain'],
-                    'skuId': ResellerSKU.GoogleDriveStorage20GB,
-                    'plan': {
-                        'planName': ResellerPlanName.Flexible
-                    },
-                    'seats': {
-                        'numberOfSeats': 5,
-                        'maximumNumberOfSeats': 5,
-                    },
-                    'purchaseOrderId': 'G00gl39001-d20'
-                }).execute(num_retries=5)
-
-            return self.redirect("/step7")
+    return method
 
 
-    @wsgi.route("/step7")
-    class StepSevenHandler(BaseHandler):
-        def get(self):
-            return self.render_template("templates/step7.html")
+class StepTwoHandler(ApiHandler):
+  @csrf_protect
+  def post(self):
+    domain = self.json_data['domain']
+    numberOfSeats = self.json_data['numberOfSeats']
 
-        def post(self):
-            credentials = get_credentials(sub=settings.RESELLER_ADMIN)
-            http = httplib2.Http()
+    service = build(serviceName="reseller",
+                    version=settings.RESELLER_API_VERSION,
+                    http=get_authorized_http())
 
-            credentials.authorize(http)
+    response = service.subscriptions().insert(
+      customerId=domain,
+      body={
+        'customerId': domain,
+        'subscriptionId': "%s-apps" % domain,
+        'skuId': ResellerSKU.GoogleApps,
+        'plan': {
+          'planName': ResellerPlanName.Flexible,
+        },
+        'seats': {
+          'numberOfSeats': numberOfSeats,
+          'maximumNumberOfSeats': numberOfSeats
+        },
+        'renewalSettings': {
+          'renewalType': ResellerRenewalType.PayAsYouGo
+        },
+        'purchaseOrderId': 'G00gl39001'
+      }).execute(num_retries=5)
 
-            service = build(serviceName="licensing",
-                            version='v1',
-                            http=http)
+    return response
 
-            service.licenseAssignments().insert(
-                productId=ResellerProduct.GoogleDrive,
-                skuId=ResellerSKU.GoogleDriveStorage20GB,
-                body={
-                    'userId': 'admin@%s' % self.session['domain']
-                }).execute(num_retries=5)
 
-            return self.render_template("templates/fin.html")
+class StepThreeHandler(ApiHandler):
+  @csrf_protect
+  def post(self):
+    '''
+    Call the site verification api and fetch the token value.
+    '''
+
+    # establish default values.
+    verification_type = self.json_data['verificationType']
+    identifier = self.json_data['verificationIdentifier']
+    verification_method = self.json_data['verificationMethod']
+
+    # build the site verification service.
+    service = build(serviceName="siteVerification",
+                    version="v1",
+                    http=get_authorized_http())
+
+    # fetch a verification token.
+    response = service.webResource().getToken(body={
+      'site': {
+        'type': verification_type,
+        'identifier': identifier
+      },
+      'verificationMethod': verification_method
+    }).execute(num_retries=5)
+
+    return {
+      'verificationToken': response['token'],
+      'verificationType': verification_type,
+      'verificationMethod': verification_method,
+      'verificationIdentifier': identifier
+    }
+
+
+class StepFourHandler(ApiHandler):
+  @csrf_protect
+  def post(self):
+    """
+    Call site verification service with token.
+
+    Call the site verification service and see if the
+    token has been fulfilled (e.g. a dns entry added)
+    """
+
+    service = build(serviceName="siteVerification",
+                    version="v1",
+                    http=get_authorized_http())
+
+    verification_type = self.json_data.get("verification_type")
+    verification_identifier = self.json_data.get("verification_identifier")
+    verification_method = self.json_data.get("verification_method")
+
+    # try to do a verification,
+    # which will test the method on the Google server side.
+    service.webResource().insert(
+      verificationMethod=verification_method,
+      body={
+        'site': {
+          'type': verification_type,
+          'identifier': verification_identifier
+        },
+        'verificationMethod': verification_method
+      }
+    ).execute(num_retries=5)
+
+
+class StepFiveHandler(ApiHandler):
+  @csrf_protect
+  def post(self):
+    domain = self.json_data['domain']
+    username = "admin@%s" % domain
+    password = "P@ssw0rd!!"
+
+    service = build(serviceName="admin",
+                    version="directory_v1",
+                    http=get_authorized_http())
+
+    # create the user.
+    service.users().insert(body={
+      'primaryEmail': username,
+      'name': {
+        'givenName': 'Admin',
+        'familyName': 'Admin',
+        'fullName': 'Admin Admin'
+      },
+      'suspended': False,
+      'password': password
+    }).execute(num_retries=5)
+
+    # make the user a super admin.
+    service.users().makeAdmin(
+      userKey=username,
+      body={
+        'status': True
+      }).execute(num_retries=5)
+
+    return {
+      'domain': domain,
+      'username': username,
+      'password': password
+    }
+
+
+class StepSixHandler(ApiHandler):
+  @csrf_protect
+  def post(self):
+    domain = self.json_data['domain']
+
+    service = build(serviceName="reseller",
+                    version=settings.RESELLER_API_VERSION,
+                    http=get_authorized_http())
+
+    response = service.subscriptions().insert(
+      customerId=domain,
+      body={
+        'customerId': domain,
+        'skuId': ResellerSKU.GoogleDriveStorage20GB,
+        'plan': {
+          'planName': ResellerPlanName.Flexible
+        },
+        'seats': {
+          'numberOfSeats': 5,
+          'maximumNumberOfSeats': 5,
+        },
+        'purchaseOrderId': 'G00gl39001-d20'
+      }).execute(num_retries=5)
+
+    return response
+
+
+class StepSevenHandler(ApiHandler):
+  @csrf_protect
+  def post(self):
+    domain = self.json_data['domain']
+
+    service = build(serviceName="licensing",
+                    version='v1',
+                    http=get_authorized_http())
+
+    service.licenseAssignments().insert(
+      productId=ResellerProduct.GoogleDrive,
+      skuId=ResellerSKU.GoogleDriveStorage20GB,
+      body={
+        'userId': 'admin@%s' % domain
+      }).execute(num_retries=5)
+
+
+app = WSGIApplication(routes=[
+
+  # Reseller Provisioning Flow API Methods
+  (r'/api/createCustomer', StepOneHandler),
+  (r'/api/createSubscription', StepTwoHandler),
+  (r'/api/getSiteValidationToken', StepThreeHandler),
+  (r'/api/testValidation', StepFourHandler),
+  (r'/api/createUser', StepFiveHandler),
+  (r'/api/createDriveStorageSubscription', StepSixHandler),
+  (r'/api/assignDriveLicense', StepSevenHandler),
+
+  # Generic Template Method.
+  (r'/.*', IndexHandler)
+], config=settings.WEBAPP2_CONFIG)

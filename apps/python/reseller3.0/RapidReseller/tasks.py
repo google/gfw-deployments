@@ -1,22 +1,10 @@
 #!/usr/bin/python
 #
 # Copyright 2013 Google Inc. All Rights Reserved.
+""" Response handlers for offline task queues.
 
+    TaskCleanUp: Purge a given Google Apps customer instance.
 """
-      DISCLAIMER:
-
-   (i) GOOGLE INC. ("GOOGLE") PROVIDES YOU ALL CODE HEREIN "AS IS" WITHOUT ANY
-   WARRANTIES OF ANY KIND, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE, INCLUDING,
-   WITHOUT LIMITATION, ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
-   PARTICULAR PURPOSE AND NON-INFRINGEMENT; AND
-
-   (ii) IN NO EVENT WILL GOOGLE BE LIABLE FOR ANY LOST REVENUES, PROFIT OR DATA,
-   OR ANY DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE
-   DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, EVEN IF
-   GOOGLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, ARISING OUT OF
-   THE USE OR INABILITY TO USE, MODIFICATION OR DISTRIBUTION OF THIS CODE OR
-   ITS DERIVATIVES.
-   """
 
 __author__ = 'richieforeman@google.com (Richie Foreman)'
 
@@ -24,8 +12,8 @@ import httplib2
 import time
 
 import logging
-from app import wsgi
 from app import BaseHandler
+from app import WSGIApplication
 
 from constants import ResellerPlanName
 from constants import ResellerSKU
@@ -44,17 +32,16 @@ from oauth2client.client import SignedJwtAssertionCredentials
 
 from utils import get_credentials
 
+import webapp2
 
-@wsgi.route("/tasks/cleanup")
+
 class TaskCleanup(BaseHandler):
-    def get(self):
-        self.post()
+
     def post(self):
         domain = self.request.get("domain")
         logging.info("Execing cleanup task for domain (%s)" % domain)
 
         http = httplib2.Http()
-        httplib2.debuglevel = 4
         credentials = get_credentials(settings.RESELLER_ADMIN)
         credentials.authorize(http)
 
@@ -77,37 +64,44 @@ class TaskCleanup(BaseHandler):
             maxResults=100).execute(num_retries=5)
 
         # resort the subscriptions and bump GAFB subs to the bottom
-        subs = sorted(
-            response['subscriptions'],
-            cmp=lambda a, b: int(a['skuId'] == ResellerSKU.GoogleApps) - 1)
+        all_subscriptions = response['subscriptions']
 
         batch = BatchHttpRequest(callback=delete_sub_callback)
 
-        logging.info("Purging %d subs" % len(subs))
+        logging.info("Purging %d subs" % len(all_subscriptions))
 
-        for s in subs:
-            if s['status'] in [ResellerDeletionType.Cancel,
-                               ResellerDeletionType.Suspend,
-                               ResellerDeletionType.Downgrade]:
+        apps_subscription = None
+
+        for subscription in all_subscriptions:
+            if subscription['status'] in [ResellerDeletionType.Cancel,
+                                          ResellerDeletionType.Suspend,
+                                          ResellerDeletionType.Downgrade]:
                 logging.info("Skipping subscription, in deleted state")
                 continue
 
+            # GAfB cannot be deleted in the batch request with the others.
+            if subscription['skuId'] == ResellerSKU.GoogleApps:
+                apps_subscription = subscription
+                continue
+
             # Google-Drive-storage / Google-Vault must be cancelled.
-            deletionType = ResellerDeletionType.Cancel
-
-            # GAfB cannot be 'cancelled', and must be 'suspended'
-            if s['skuId'] == ResellerSKU.GoogleApps:
-                deletionType = ResellerDeletionType.Suspend
-
             request = service.subscriptions().delete(
                 customerId=domain,
-                subscriptionId=s['subscriptionId'],
-                deletionType=deletionType)
+                subscriptionId=subscription['subscriptionId'],
+                deletionType=ResellerDeletionType.Cancel)
 
             batch.add(request)
 
         batch.execute(http=http)
 
+        # Delete
+        if apps_subscription:
+            service.subscriptions().delete(
+                customerId=domain,
+                subscriptionId=apps_subscription['subscriptionId'],
+                deletionType=ResellerDeletionType.Suspend
+            ).execute(num_retries=5)
 
-
-
+app = WSGIApplication(routes=[
+    (r'/tasks/cleanup', TaskCleanup),
+], config=settings.WEBAPP2_CONFIG)

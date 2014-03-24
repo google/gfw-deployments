@@ -2,22 +2,6 @@
 #
 # Copyright 2013 Google Inc. All Rights Reserved.
 
-"""
-      DISCLAIMER:
-
-   (i) GOOGLE INC. ("GOOGLE") PROVIDES YOU ALL CODE HEREIN "AS IS" WITHOUT ANY
-   WARRANTIES OF ANY KIND, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE, INCLUDING,
-   WITHOUT LIMITATION, ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
-   PARTICULAR PURPOSE AND NON-INFRINGEMENT; AND
-
-   (ii) IN NO EVENT WILL GOOGLE BE LIABLE FOR ANY LOST REVENUES, PROFIT OR DATA,
-   OR ANY DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE
-   DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, EVEN IF
-   GOOGLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, ARISING OUT OF
-   THE USE OR INABILITY TO USE, MODIFICATION OR DISTRIBUTION OF THIS CODE OR
-   ITS DERIVATIVES.
-   """
-
 __author__ = 'richieforeman@google.com (Richie Foreman)'
 
 
@@ -72,9 +56,6 @@ class ResellerSKU(object):
 
 
 class ResellerPlanName(object):
-    # As of 11/21/13, this is invalid.
-    # Annual, paid every month
-    #Annual = "ANNUAL"
 
     # Annual Prepaid for the entire year.
     AnnualYearly = "ANNUAL_YEARLY_PAY"
@@ -97,14 +78,14 @@ class ResellerPlanName(object):
             cls.Trial
         ]
 
+
 class ResellerDeletionType(object):
     Cancel = "cancel"
     Downgrade = "downgrade"
     Suspend = "suspend"
 
+
 class ResellerRenewalType(object):
-    # automatically renew for the same license count.
-    #AutoRenew = "AUTO_RENEW"
 
     # Auto renew with monthly pay
     AutoRenewMonthly = "AUTO_RENEW_MONTHLY_PAY"

@@ -2,29 +2,41 @@
 #
 # Copyright 2013 Google Inc. All Rights Reserved.
 
-"""
-      DISCLAIMER:
-
-   (i) GOOGLE INC. ("GOOGLE") PROVIDES YOU ALL CODE HEREIN "AS IS" WITHOUT ANY
-   WARRANTIES OF ANY KIND, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE, INCLUDING,
-   WITHOUT LIMITATION, ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
-   PARTICULAR PURPOSE AND NON-INFRINGEMENT; AND
-
-   (ii) IN NO EVENT WILL GOOGLE BE LIABLE FOR ANY LOST REVENUES, PROFIT OR DATA,
-   OR ANY DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE
-   DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, EVEN IF
-   GOOGLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, ARISING OUT OF
-   THE USE OR INABILITY TO USE, MODIFICATION OR DISTRIBUTION OF THIS CODE OR
-   ITS DERIVATIVES.
-   """
-
 __author__ = 'richieforeman@google.com (Richie Foreman)'
 
 from google.appengine.api import memcache
 import httplib2
+import logging
 
 import settings
 from oauth2client.client import SignedJwtAssertionCredentials
+
+
+def csrf_protect(func):
+    def wrapper(instance):
+        if not instance.app._ENABLE_CSRF:
+            return func(instance)
+
+        # the token can come from a get param or a header.
+        token_param = instance.request.get("token", None)
+        token_header = instance.request.headers.get("X-Xsrf-Token", None)
+        token = token_param or token_header
+
+        if token is not None and token == instance.get_csrf_token():
+            instance.regenerate_csrf_token()
+            return func(instance)
+
+        instance.abort(403)
+
+    return wrapper
+
+
+def get_authorized_http():
+    credentials = get_credentials(sub=settings.RESELLER_ADMIN)
+    http = httplib2.Http(timeout=20, cache=memcache.Client())
+    credentials.authorize(http)
+    return http
+
 
 def get_credentials(sub=None):
     '''
@@ -36,6 +48,8 @@ def get_credentials(sub=None):
     credentials = memcache.get("rapid-reseller#credentials#%s" % sub)
 
     if credentials is None or credentials.invalid:
+        logging.info("Couldn't find cached token, refreshing")
+
         http = httplib2.Http()
 
         f = file(settings.OAUTH2_PRIVATEKEY)
