@@ -62,14 +62,13 @@ class IndexTest(BaseTestCase):
 
         self.assertEqual(response.status_int, 200)
 
-
 class Step1Test(BaseTestCase):
     def testGet(self):
         # it should fetch the time and build a temporary domain name.
         request = webapp2.Request.blank('/step1')
 
         with patch('app.BaseHandler.render_template') as template, \
-            patch('time.time', return_value="123") as time_mock:
+            patch('main.time.time', return_value="123") as time_mock:
             response = request.get_response(main.app)
 
             template.assert_called_with(
