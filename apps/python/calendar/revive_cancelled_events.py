@@ -79,6 +79,10 @@ def main(args):
 
     rows = csv.reader(open(args.input, 'r'))
 
+    report = csv.DictWriter(f=open(args.report, 'w'), fieldnames=[
+      'calendarId', 'id', 'status'])
+    report.writeheader()
+
     for user, in rows:
       calendarId = user
       all_events = []
@@ -105,9 +109,13 @@ def main(args):
       print "User %s has %d tombstoned events out of %d" % \
         (calendarId, len(cancelled_events), len(all_events))
 
-      # optionally remove previously revived events..
-      if not args.force:
-        cancelled_events = [e for e in cancelled_events if e['extendedProperties']['shared'].get('_revived') is None]
+      # report all events to a csv.
+      for e in all_events:
+        report.writerow({
+          'calendarId': calendarId,
+          'id': e['id'],
+          'status': e['status']
+        })
 
       batches = chunks(cancelled_events, BATCH_SIZE)
 
@@ -122,22 +130,14 @@ def main(args):
               calendarId=calendarId,
               eventId=event['id'],
               body={
-                'status': 'tentative',
-                'extendedProperties': {
-                  'shared': {
-                    '_revived': True
-                  }
-                }
+                'status': 'confirmed'
               }))
           batch.execute(http=http)
-
-
-
 
 if __name__ == "__main__":
     parser = ArgumentParser(parents=[run_parser])
     parser.add_argument("--input")
-    parser.add_argument("--force", action="store_true", default=False)
+    parser.add_argument("--report")
     parser.add_argument("--apply", action="store_true", default=False)
     args = parser.parse_args()
     main(args)
