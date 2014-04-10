@@ -1,6 +1,7 @@
 package com.richieforeman.rapidreseller;
 
 import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.admin.directory.Directory;
@@ -41,8 +42,13 @@ public class GoogleAPIUtils {
 		return credentials;
 	}
 	public static Reseller getResellerService(GoogleCredential credentials) {
-		Reseller service = new Reseller.Builder(HTTP_TRANSPORT, JSON_FACTORY, credentials)
-			.setApplicationName(ApplicationName).build();
+		//GoogleClientRequestInitializer tracingToken = new TracingTokenInitializer();
+		
+		Reseller service = new Reseller.Builder(HTTP_TRANSPORT, JSON_FACTORY, null)
+			.setApplicationName(ApplicationName)
+			.setHttpRequestInitializer(credentials)
+			//.setGoogleClientRequestInitializer(tracingToken)
+			.build();
 		return service;
 	}
 	

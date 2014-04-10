@@ -45,7 +45,6 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/protobuf-java-2.4.1.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/transaction-api-1.1.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/xpp3-1.1.4c.jar"/>
-	<classpathentry kind="lib" path="/Users/richieforeman/Downloads/siteVerification/google-api-services-siteVerification-v1-rev29-1.17.0-rc.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/google-api-services-siteVerification-v1-rev30-1.17.0-rc.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/google-api-services-admin-directory_v1-rev29-1.17.0-rc.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/google-api-services-licensing-v1-rev26-1.17.0-rc.jar"/>
