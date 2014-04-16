@@ -6,10 +6,13 @@ mod.config([
   '$httpProvider',
   function($routeProvider, $locationProvider, $httpProvider) {
 
+    // Attach the HTTP Loading interceptor.
     $httpProvider.interceptors.push('LoadingInterceptorService');
 
-    // Define routes here.
+    // Utilize "pretty" links.
     $locationProvider.html5Mode(true);
+
+    // Define routes here.
     $routeProvider.when('/', {
       templateUrl: 'partials/index.html'
     }).when('/step1', {

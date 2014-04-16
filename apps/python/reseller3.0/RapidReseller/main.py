@@ -155,13 +155,13 @@ class StepFourHandler(ApiHandler):
     token has been fulfilled (e.g. a dns entry added)
     """
 
+    verification_type = self.json_data.get("verificationType")
+    verification_identifier = self.json_data.get("verificationIdentifier")
+    verification_method = self.json_data.get("verificationMethod")
+
     service = build(serviceName="siteVerification",
                     version="v1",
                     http=get_authorized_http())
-
-    verification_type = self.json_data.get("verification_type")
-    verification_identifier = self.json_data.get("verification_identifier")
-    verification_method = self.json_data.get("verification_method")
 
     # try to do a verification,
     # which will test the method on the Google server side.

@@ -1,14 +1,14 @@
-mod = angular.module(SERVICES);
-mod.factory('CurrentDomainService', function(StorageService) {
-  var _key = 'CurrentDomainService';
+var CurrentDomainService = function(StorageService) {
+  var _key = '$__CurrentDomainService';
+  this.$storageService = StorageService;
+};
 
-  this.set = function(data) {
-    StorageService.set(_key, data);
-  };
+CurrentDomainService.prototype.set = function(data) {
+  this.$storageService.set(this._key, data);
+};
 
-  this.get = function(data) {
-    return StorageService.get(_key);
-  };
+CurrentDomainService.prototype.get = function() {
+  return this.$storageService.get(this._key);
+}
 
-  return this;
-});
+angular.module(SERVICES).service('CurrentDomainService', CurrentDomainService);

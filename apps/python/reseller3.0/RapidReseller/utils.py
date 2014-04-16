@@ -13,62 +13,66 @@ from oauth2client.client import SignedJwtAssertionCredentials
 
 
 def csrf_protect(func):
-    def wrapper(instance):
-        if not instance.app._ENABLE_CSRF:
-            return func(instance)
+  def wrapper(instance):
+    if not instance.app._ENABLE_CSRF:
+      return func(instance)
 
-        # the token can come from a get param or a header.
-        token_param = instance.request.get("token", None)
-        token_header = instance.request.headers.get("X-Xsrf-Token", None)
-        token = token_param or token_header
+    # the token can come from a get param or a header.
+    token_param = instance.request.get("token", None)
+    token_header = instance.request.headers.get("X-Xsrf-Token", None)
+    token = token_param or token_header
 
-        if token is not None and token == instance.get_csrf_token():
-            instance.regenerate_csrf_token()
-            return func(instance)
+    if token is not None and token == instance.get_csrf_token():
+      instance.regenerate_csrf_token()
+      return func(instance)
 
-        instance.abort(403)
+    instance.abort(403)
 
-    return wrapper
+  return wrapper
 
 
 def get_authorized_http():
-    credentials = get_credentials(sub=settings.RESELLER_ADMIN)
-    http = httplib2.Http(timeout=20, cache=memcache.Client())
-    credentials.authorize(http)
-    return http
+  credentials = get_credentials(sub=settings.RESELLER_ADMIN)
+  # The python library requests discovery documents for every request
+  # unless you implement a cache.  The Java and PHP libs don't do this.
+  httplib2.debuglevel = 4
+  http = httplib2.Http(timeout=20, cache=memcache.Client())
+  credentials.authorize(http)
+  return http
 
 
 def get_credentials(sub=None):
-    '''
-    Signed JWT Credentials allow for frictionless authentication
-    using a private key as opposed to a three-legged oauth flow.
-    '''
+  '''
+  Signed JWT Credentials allow for frictionless authentication
+  using a private key as opposed to a three-legged oauth flow.
+  '''
 
-    # fetch the credentials object from memcache.
-    credentials = memcache.get("rapid-reseller#credentials#%s" % sub)
+  # fetch the credentials object from memcache.
+  credentials = memcache.get("rapid-reseller#credentials#%s" % sub)
 
-    if credentials is None or credentials.invalid:
-        logging.info("Couldn't find cached token, refreshing")
+  if credentials is None or credentials.invalid:
+    logging.info("Couldn't find cached token, refreshing")
 
-        http = httplib2.Http()
+    http = httplib2.Http()
 
-        f = file(settings.OAUTH2_PRIVATEKEY)
-        key = f.read()
-        f.close()
+    # read private key.
+    f = file(settings.OAUTH2_PRIVATEKEY)
+    key = f.read()
+    f.close()
 
-        # establish the credentials.
-        credentials = SignedJwtAssertionCredentials(
-            service_account_name=settings.OAUTH2_SERVICE_ACCOUNT_EMAIL,
-            private_key=key,
-            scope=" ".join(settings.OAUTH2_SCOPES),
-            sub=sub)
+    # establish the credentials.
+    credentials = SignedJwtAssertionCredentials(
+      service_account_name=settings.OAUTH2_SERVICE_ACCOUNT_EMAIL,
+      private_key=key,
+      scope=" ".join(settings.OAUTH2_SCOPES),
+      sub=sub)
 
-        # force the generation of an access token
-        credentials.refresh(http)
+    # force the generation of an access token
+    credentials.refresh(http)
 
-        # cache the token for 59 minutes.
-        memcache.set("rapid-reseller#credentials#%s" % sub,
-                     value=credentials,
-                     time=(60*59))
+    # cache the token for 59 minutes.
+    memcache.set("rapid-reseller#credentials#%s" % sub,
+                 value=credentials,
+                 time=(60 * 59))
 
-    return credentials
+  return credentials

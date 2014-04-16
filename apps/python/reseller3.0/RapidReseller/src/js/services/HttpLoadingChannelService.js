@@ -1,20 +1,20 @@
-mod = angular.module(SERVICES);
-
-mod.factory('HttpLoadingChannelService', function($rootScope) {
-  var HTTP_LOADING_CHANNEL_SERVICE_MESSAGE = '$__HttpLoadingChannelService';
+var HttpLoadingChannelService = function($rootScope) {
+  this.HTTP_LOADING_CHANNEL_SERVICE_MESSAGE = '$__HttpLoadingChannelService';
+  this.$scope = $rootScope;
 
   $rootScope.__CURRENT_HTTP_STATE = -1;
+};
 
-  this.setState = function(state) {
-    $rootScope.$emit(HTTP_LOADING_CHANNEL_SERVICE_MESSAGE, state);
-    $rootScope.__CURRENT_HTTP_STATE = state;
-  };
+HttpLoadingChannelService.prototype.setState = function(state) {
+  this.$scope.$emit(this.HTTP_LOADING_CHANNEL_SERVICE_MESSAGE, state);
+  this.$scope.__CURRENT_HTTP_STATE = state;
+};
 
-  this.onState = function(handler) {
-    $rootScope.$on(HTTP_LOADING_CHANNEL_SERVICE_MESSAGE, function(e, message) {
-      handler(message);
-    });
-  };
+HttpLoadingChannelService.prototype.onState = function(handler) {
+  this.$scope.$on(this.HTTP_LOADING_CHANNEL_SERVICE_MESSAGE, function(e, msg) {
+    handler(msg);
+  });
+};
 
-  return this;
-});
+angular.module(SERVICES).service('HttpLoadingChannelService',
+  HttpLoadingChannelService);

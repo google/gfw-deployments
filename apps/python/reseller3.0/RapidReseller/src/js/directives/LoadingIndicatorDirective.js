@@ -1,6 +1,4 @@
-mod = angular.module(DIRECTIVES);
-
-mod.directive('loadingIndicator', function() {
+var loadingIndicatorDirective = function() {
   return {
     restrict: 'E',
     transclude: true,
@@ -13,4 +11,7 @@ mod.directive('loadingIndicator', function() {
       });
     }
   };
-});
+};
+
+angular.module(DIRECTIVES).directive('loadingIndicator',
+  loadingIndicatorDirective);

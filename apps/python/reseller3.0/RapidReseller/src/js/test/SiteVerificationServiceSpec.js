@@ -1,4 +1,4 @@
-ddescribe('SiteVerificationTokenCacheService', function() {
+describe('SiteVerificationTokenCacheService', function() {
   var _service;
   var _location;
 

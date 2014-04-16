@@ -1,6 +1,4 @@
-mod = angular.module(DIRECTIVES);
-
-mod.directive('alertNotice', function() {
+var alertNoticeDirective = function() {
   return {
     restrict: 'E',
     transclude: true,
@@ -17,4 +15,6 @@ mod.directive('alertNotice', function() {
       });
     }
   };
-});
+};
+
+angular.module(DIRECTIVES).directive('alertNotice', alertNoticeDirective);

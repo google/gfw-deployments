@@ -1,18 +1,22 @@
-mod = angular.module(SERVICES);
+var StorageService = function($window) {
+  this.$storage = $window.sessionStorage;
+  this._prefix = APP + '#ng_';
 
-mod.factory('StorageService', function($window) {
-  var _engine = $window.sessionStorage;
-  //var _engine = $window.localStorage;
-  var _prefix = APP + '#ng_';
+  this.$toJson = angular.toJson;
+  this.$fromJson = angular.fromJson;
+}
 
-  this.set = function(key, data) {
-    _engine.setItem(_prefix + key, angular.toJson(data));
-  };
+StorageService.prototype._getKey = function(key) {
+  return this._prefix + key;
+};
 
-  this.get = function(key) {
-    data = _engine.getItem(_prefix + key);
-    return angular.fromJson(data);
-  };
+StorageService.prototype.set = function(key, data) {
+  this.$storage.setItem(this._getKey(key), this.$toJson(data));
+};
 
-  return this;
-});
+StorageService.prototype.get = function(key) {
+  var data = this.$storage.getItem(this._getKey(key));
+  return this.$fromJson(data);
+};
+
+angular.module(SERVICES).service('StorageService', StorageService);

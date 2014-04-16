@@ -20,7 +20,6 @@
 
 __author__ = 'richieforeman@google.com (Richie Foreman)'
 
-
 from apiclient.http import HttpMockSequence
 from google.appengine.ext import testbed
 import json
@@ -33,80 +32,83 @@ import webapp2
 
 TEST_ROOT = os.path.dirname(os.path.realpath(__file__))
 RESELLER_DISCOVERY = open(TEST_ROOT + '/data/reseller_v1.json', 'rb').read()
-RESELLER_DISCOVERY_URL = "https://www.googleapis.com/discovery/v1/apis/reseller/v1/rest"
+RESELLER_DISCOVERY_URL = "https://www.googleapis" \
+                         ".com/discovery/v1/apis/reseller/v1/rest"
 
 app = main.app
-app._ENABLE_CSRF = False
 
 
 class BaseTestCase(unittest.TestCase):
-    def setUp(self):
-        self.testbed = testbed.Testbed()
-        self.testbed.activate()
-        self.testbed.init_memcache_stub()
-        self.testbed.init_urlfetch_stub()
-        self.testbed.init_taskqueue_stub()
+  def setUp(self):
+    self.testbed = testbed.Testbed()
+    self.testbed.activate()
+    self.testbed.init_memcache_stub()
+    self.testbed.init_urlfetch_stub()
+    self.testbed.init_taskqueue_stub()
 
-    def tearDown(self):
-        self.testbed.deactivate()
+  def tearDown(self):
+    self.testbed.deactivate()
 
 
 class IndexTest(BaseTestCase):
-    def testGet(self):
-        # it should draw the main index page.
-        request = webapp2.Request.blank('/')
+  def testGet(self):
+    # it should draw the main index page.
+    request = webapp2.Request.blank('/')
 
-        with patch('app.BaseHandler.render_template') as template:
-            response = request.get_response(app)
-            template.assert_called_with('templates/index.html')
+    with patch('app.BaseHandler.render_template') as template:
+      response = request.get_response(app)
+      template.assert_called_with('templates/index.html')
 
-        self.assertEqual(response.status_int, 200)
+    self.assertEqual(response.status_int, 200)
+
 
 class Step1Test(BaseTestCase):
-    def testGet(self):
-        # it should fetch the time and build a temporary domain name.
-        request = webapp2.Request.blank('/step1')
+  def testGet(self):
+    # it should fetch the time and build a temporary domain name.
+    request = webapp2.Request.blank('/step1')
 
-        with patch('app.BaseHandler.render_template') as template, \
-            patch('main.time.time', return_value="123") as time_mock:
-            response = request.get_response(main.app)
+    with patch('app.BaseHandler.render_template') as template, \
+      patch('main.time.time', return_value="123") as time_mock:
+      response = request.get_response(main.app)
 
-            template.assert_called_with(
-                "templates/step1.html",
-                domain="demo-123.resold.richieforeman.net")
+      template.assert_called_with(
+        "templates/step1.html",
+        domain="demo-123.resold.richieforeman.net")
 
-        self.assertEqual(response.status_int, 200)
+    self.assertEqual(response.status_int, 200)
 
-    def testPost(self):
-        request = webapp2.Request.blank("/step1", POST={
-            'domain': 'demo-123.resold.richieforeman.net'
-        })
-        from mock import MagicMock
+  def testPost(self):
+    request = webapp2.Request.blank("/step1", POST={
+      'domain': 'demo-123.resold.richieforeman.net'
+    })
+    from mock import MagicMock
 
-        http = HttpMockSequence([
-            ({'status': '200'}, RESELLER_DISCOVERY),
-            ({'status': '200'}, json.dumps({}))
-        ])
+    http = HttpMockSequence([
+      ({'status': '200'}, RESELLER_DISCOVERY),
+      ({'status': '200'}, json.dumps({}))
+    ])
 
-        # wrap http.request so we can spy on it.
-        http.request = MagicMock(wraps=http.request)
+    # wrap http.request so we can spy on it.
+    http.request = MagicMock(wraps=http.request)
 
-        with patch('main.get_authorized_http', return_value=http):
-            response = request.get_response(app)
+    with patch('main.get_authorized_http', return_value=http):
+      response = request.get_response(app)
 
-            self.assertTrue(http.request.called)
-            discovery_call = http.request.call_args_list[0]
-            create_customer = http.request.call_args_list[1]
+      self.assertTrue(http.request.called)
+      discovery_call = http.request.call_args_list[0]
+      create_customer = http.request.call_args_list[1]
 
-            # ensure that a discovery call occured.
-            (url,), args = discovery_call
-            self.assertEqual(url, RESELLER_DISCOVERY_URL)
+      # ensure that a discovery call occured.
+      (url,), args = discovery_call
+      self.assertEqual(url, RESELLER_DISCOVERY_URL)
 
-            # ensure that a customer was created via the POST api.
-            (url, method), args = create_customer
-            self.assertEqual(url, 'https://www.googleapis.com/apps/reseller/v1/customers?alt=json')
-            self.assertEqual(method, 'POST')
+      # ensure that a customer was created via the POST api.
+      (url, method), args = create_customer
+      self.assertEqual(url,
+                       'https://www.googleapis'
+                       '.com/apps/reseller/v1/customers?alt=json')
+      self.assertEqual(method, 'POST')
 
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

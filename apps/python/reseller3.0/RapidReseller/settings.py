@@ -19,22 +19,22 @@ OAUTH2_PRIVATEKEY = ROOT + "/privatekey.pem"
 
 # Scopes declare what rights this application has access to.
 OAUTH2_SCOPES = [
-    'https://www.googleapis.com/auth/apps.order',
-    'https://www.googleapis.com/auth/siteverification',
-    'https://www.googleapis.com/auth/admin.directory.user',
-    'https://www.googleapis.com/auth/apps.licensing'
+  'https://www.googleapis.com/auth/apps.order',
+  'https://www.googleapis.com/auth/siteverification',
+  'https://www.googleapis.com/auth/admin.directory.user',
+  'https://www.googleapis.com/auth/apps.licensing'
 ]
 RESELLER_DOMAIN = ""
 RESELLER_ADMIN = ""
 RESELLER_API_VERSION = 'v1'
 
-SESSION_MAXAGE = 86400
+SESSION_MAX_AGE = 86400
 SESSION_BACKEND = "memcache"
 
 WEBAPP2_CONFIG = {
-    'webapp2_extras.sessions': {
-        'secret_key': 'webapp2requiresthis'
-    }
+  'webapp2_extras.sessions': {
+    'secret_key': 'webapp2requiresthis'
+  }
 }
 
 SITE_VERIFICATION_METHODS = ['FILE', 'META', 'ANALYTICS', 'TAG_MANAGER']
@@ -46,8 +46,8 @@ DOMAIN_TEMPLATE = "demo-%d.acmecorp.com"
 DOMAIN_CLEANUP_TIMER = (86400 * 2)
 
 try:
-    # utilize a local settings file.
-    from settings_local import *
+  # utilize a local settings file.
+  from settings_local import *
 except ImportError:
-    # running on prod/public.
-    pass
+  # running on prod/public.
+  pass

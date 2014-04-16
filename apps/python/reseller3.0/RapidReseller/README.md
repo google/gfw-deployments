@@ -92,6 +92,12 @@ Start the main grunt task:
 
 This will watch for changes to non-vendor javascript and css.
 
+### Run tests
+
+Start the test grunt task:
+
+    grunt test
+
 ### Deploying a build
 
 Utilize the following grunt task to compile and uglify the JS

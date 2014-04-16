@@ -1,14 +1,15 @@
-mod = angular.module(SERVICES);
-mod.factory('SiteVerificationTokenCacheService', function(StorageService) {
-  var _key = 'SiteVerificationTokenCache';
+var SiteVerificationTokenCacheService = function(StorageService) {
+  this._KEY = 'SiteVerificationTokenCache';
+  this.$storage = StorageService;
+}
 
-  this.setData = function(data) {
-    StorageService.set(_key, data);
-  };
+SiteVerificationTokenCacheService.prototype.setData = function(data) {
+  this.$storage.set(this._KEY, data);
+};
 
-  this.getData = function() {
-    return StorageService.get(_key);
-  };
+SiteVerificationTokenCacheService.prototype.getData = function(data) {
+  return this.$storage.get(this._KEY);
+};
 
-  return this;
-});
+angular.module(SERVICES).service('SiteVerificationTokenCacheService',
+  SiteVerificationTokenCacheService);

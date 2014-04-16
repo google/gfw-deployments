@@ -162,9 +162,9 @@ module.exports = function(grunt) {
     'watch'
   ]);
 
-  grunt.registerTask('tw', [
+  grunt.registerTask('test', [
     'build:dev',
-    'watch:karma'
+    'karma:unit'
   ]);
 
   // task for building main index page based on environment
