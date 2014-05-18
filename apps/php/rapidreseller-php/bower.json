@@ -1,0 +1,13 @@
+{
+  "name": "Rapid Reseller",
+  "description": "Rapid Reseller",
+  "version": "1.0.0",
+  "dependencies": {
+    "angular": "~1.2.8",
+    "angular-route": "~1.2.8",
+    "angular-mocks": "~1.2.10",
+    "bootstrap": "~3.0.3",
+    "angular-bootstrap": "~0.10.0",
+    "jquery": "~2.1.0"
+  }
+}

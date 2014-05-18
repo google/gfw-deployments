@@ -1,0 +1,41 @@
+<div ng-switch="userCreateConfirm.userStatus">
+    <div ng-switch-default>
+        <loading-indicator></loading-indicator>...
+    </div>
+    <div ng-switch-when="0">
+        <h1>User Creation Failed!</h1>
+        <a href="/" class="btn btn-default">Start Over &raquo;</a>
+        <a ng-click="userCreateConfirm.next()" class="btn btn-primary">(Optional) Allocate and Assign Drive Seats &raquo;</a>
+    </div>
+    <div ng-switch-when="1">
+        <h1>User Created!</h1>
+        <p>You can login to the new domain using the following credentials:</p>
+
+        <p>
+            <a href="https://admin.google.com" target="_blank">
+                Admin ControlPanel
+            </a>
+        </p>
+
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label class="control-label col-sm-2">Username</label>
+                <div class="col-sm-5">
+                    <input type="text" class="form-control" onClick="this.select();" value="{{userCreateConfirm.username}}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">Password</label>
+                <div class="col-sm-5">
+                    <input type="text" class="form-control" onClick="this.select();" value="{{userCreateConfirm.password}}">
+                </div>
+            </div>
+
+        </form>
+
+        <a href="/" class="btn btn-default">Start Over &raquo;</a>
+        <a ng-click="userCreateConfirm.next()" class="btn btn-primary">(Optional) Allocate and Assign Drive Seats &raquo;</a>
+    </div>
+</div>
+

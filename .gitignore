@@ -23,3 +23,9 @@ settings_local.py
 *node_modules*
 apps/java/RapidReseller/war/static/css
 apps/java/RapidReseller/war/static/js
+apps/php/rapidreseller-php/static/css/app.css
+apps/php/rapidreseller-php/static/css/vendor.css
+apps/php/rapidreseller-php/static/js/app.compiled.js
+apps/php/rapidreseller-php/static/js/app.templates.js
+apps/php/rapidreseller-php/static/js/vendor.js
+settings_local.php
