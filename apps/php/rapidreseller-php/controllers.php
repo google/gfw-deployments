@@ -172,7 +172,7 @@
 
       $user = new Google_Service_Directory_User();
       $user->setPrimaryEmail($username);
-      $user->setSuspended(true);
+      $user->setSuspended(false);
       $user->setPassword($password);
 
       $name = new Google_Service_Directory_UserName();
