@@ -48,7 +48,6 @@
   class StepOneHandler extends RequestHandler {
     function post() {
       $json_data = $this->json_data;
-      print_r($json_data);
 
       $reseller = new Google_Service_Reseller(GoogleClientHelper::GetClient());
       try {
