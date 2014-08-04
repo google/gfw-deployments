@@ -37,7 +37,7 @@ def ParseInputs():
 
   parser = OptionParser()
   parser.add_option('-d', dest='domain',
-                    help='The domain name to list sotes for.')
+                    help='The domain name to list sites for.')
   parser.add_option('-u', dest='oauth_requestor_id',
                     help='The admin user to use for authentication.')
   parser.add_option('-k', dest='oauth_consumer_key',
