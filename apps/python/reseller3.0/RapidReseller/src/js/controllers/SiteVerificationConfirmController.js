@@ -1,10 +1,9 @@
 var SiteVerificationConfirmController =
   function($location, SiteVerificationTokenCacheService) {
-    var self = this;
-    self.$location = $location;
-    self.$siteVerificationTokenCacheService = SiteVerificationTokenCacheService;
+    this.$location = $location;
+    this.$siteVerificationTokenCacheService = SiteVerificationTokenCacheService;
 
-    self.verificationInfo = SiteVerificationTokenCacheService.getData();
+    this.verificationInfo = SiteVerificationTokenCacheService.getData();
   };
 
 /**

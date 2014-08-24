@@ -8,7 +8,6 @@ var SiteVerificationActionController = function($http, $location,
   self.$siteVerificationTokenCacheService = SiteVerificationTokenCacheService;
   self.$currentDomainService = CurrentDomainService;
 
-
   self.verificationInfo = SiteVerificationTokenCacheService.getData();
 
   // attempt to do verification as the controller loads.

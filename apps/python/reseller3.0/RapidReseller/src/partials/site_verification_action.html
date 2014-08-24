@@ -3,13 +3,31 @@
     All Google Apps domains MUST be verified.  Depending upon your capabilities,
     one of these options may make more sense than the other.
 </p>
-<div ng-switch="siteVerificationAction.verificationStatus">
-    <pre ng-switch-when="-1">Site Verification Status: Working...</pre>
-    <pre ng-switch-when="0">Site Verification Status: FAILED!</pre>
-    <pre ng-switch-when="1">Site Verification Status: OK!</pre>
-    <pre ng-switch-default>Site Verification Status: Pending!</pre>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="col-sm-3">
+            Site Verification Status:
+        </div>
+        <div class="col-sm-5">
+            <span ng-switch="siteVerificationAction.verificationStatus">
+                <span ng-switch-when="-1" class="label label-warning">Working...</span>
+                <span ng-switch-when="0" class="label label-danger">Failed!</span>
+                <span ng-switch-when="1" class="label label-success">OK!</span>
+                <span ng-switch-default class="label label-info">Pending!</span>
+            </span>
+        </div>
+
+        <span class="navbar-right">
+            <a ng-click="siteVerificationAction.doVerification()"
+               ng-disabled="$root.__HTTP_REQUEST_INFLIGHT"
+               class="btn btn-default">
+                <span class="glyphicon glyphicon-repeat"></span>
+            </a>
+        </span>
+    </div>
+
 </div>
 <p>Prior to leveraging Google Apps, MX records will need to be created for the domain.</p>
 
-<a ng-click="siteVerificationAction.doVerification()" class="btn btn-default">Try Again..</a>
+
 <a ng-click="siteVerificationAction.next()" class="btn btn-primary">Next &raquo;</a>

@@ -187,31 +187,42 @@ def create_customer(service, d):
                 'addressLine3': d['customer.addressLine3'],
             }
         }
-    )
+    ).execute()
 
 def create_subscription(service, d):
     # Add a Google Apps subscription record.
-    return service.subscriptions().insert(
-        customerId=d['customerDomain'],
-        trace=None,
-        customerAuthToken=d['customerAuthToken'],
-        body={
-            'customerId': d['customerDomain'],
-            'skuId': d['skuId'],
-            'plan': {
-                'planName': d['plan.planName'],
-            },
-            'seats': {
-                'numberOfSeats':
-                    safeint(d['seats.numberOfSeats']),
-                'maximumNumberOfSeats':
-                    safeint(d['seats.maximumNumberOfSeats'])
-            },
-            'renewalSettings': {
-                'renewalType': d['renewalSettings.renewalType']
-            },
-            'purchaseOrderId': d['purchaseOrderId']
-        }).execute(num_retries=NUM_RETRIES)
+    while True:
+        try:
+            sub = service.subscriptions().insert(
+                customerId=d['customerDomain'],
+                trace=None,
+                customerAuthToken=d['customerAuthToken'],
+                body={
+                    'customerId': d['customerDomain'],
+                    'skuId': d['skuId'],
+                    'plan': {
+                        'planName': d['plan.planName'],
+                    },
+                    'seats': {
+                        'numberOfSeats':
+                            safeint(d['seats.numberOfSeats']),
+                        'maximumNumberOfSeats':
+                            safeint(d['seats.maximumNumberOfSeats'])
+                    },
+                    'renewalSettings': {
+                        'renewalType': d['renewalSettings.renewalType']
+                    },
+                    'purchaseOrderId': d['purchaseOrderId']
+                }).execute(num_retries=NUM_RETRIES)
+            break
+        except HttpError, e:
+            raise
+        except Exception, e:
+            logging.exception(e)
+            time.sleep(5)
+
+
+
 
 def main(args):
     domains = csv.DictReader(open(args.in_file, 'rb'))
@@ -235,7 +246,6 @@ def main(args):
 
     for d in domains:
         domain = d['customerDomain']
-        time.sleep(THROTTLE_SLEEP)
 
         # test to see if a customer exists in Google.
         # if the customer does not exist anywhere, then skip this entry
@@ -272,8 +282,6 @@ def main(args):
                 # an explosion has occured.
                 logging.error("%s: Error performing transfer" % domain)
                 logging.exception(e)
-
-        time.sleep(THROTTLE_SLEEP)
 
 if __name__ == "__main__":
 

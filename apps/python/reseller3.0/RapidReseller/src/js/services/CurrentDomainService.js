@@ -1,5 +1,5 @@
 var CurrentDomainService = function(StorageService) {
-  var _key = '$__CurrentDomainService';
+  this._key = '$__CurrentDomainService';
   this.$storageService = StorageService;
 };
 
@@ -9,6 +9,6 @@ CurrentDomainService.prototype.set = function(data) {
 
 CurrentDomainService.prototype.get = function() {
   return this.$storageService.get(this._key);
-}
+};
 
 angular.module(SERVICES).service('CurrentDomainService', CurrentDomainService);

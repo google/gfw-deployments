@@ -1,11 +1,10 @@
 <div ng-switch="userCreateConfirm.userStatus">
     <div ng-switch-default>
-        <loading-indicator></loading-indicator>...
+        <loading-indicator></loading-indicator><h1>Creating User...</h1>
     </div>
     <div ng-switch-when="0">
         <h1>User Creation Failed!</h1>
         <a href="/" class="btn btn-default">Start Over &raquo;</a>
-        <a ng-click="userCreateConfirm.next()" class="btn btn-primary">(Optional) Allocate and Assign Drive Seats &raquo;</a>
     </div>
     <div ng-switch-when="1">
         <h1>User Created!</h1>
@@ -35,7 +34,6 @@
         </form>
 
         <a href="/" class="btn btn-default">Start Over &raquo;</a>
-        <a ng-click="userCreateConfirm.next()" class="btn btn-primary">(Optional) Allocate and Assign Drive Seats &raquo;</a>
     </div>
 </div>
 

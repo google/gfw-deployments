@@ -18,9 +18,10 @@ import json
 from oauth2client.appengine import xsrf_secret_key
 from oauth2client import xsrfutil
 import settings
-from uuid import uuid4
 import webapp2
 from webapp2_extras import sessions
+import traceback
+
 
 
 class WSGIApplication(webapp2.WSGIApplication):
@@ -28,6 +29,9 @@ class WSGIApplication(webapp2.WSGIApplication):
 
 
 class BaseHandler(webapp2.RequestHandler):
+
+  XSRF_TOKEN_KEY = "XSRF-TOKEN"
+
   def dispatch(self):
     # activate session store.
     self.session_store = sessions.get_store(request=self.request)
@@ -36,7 +40,7 @@ class BaseHandler(webapp2.RequestHandler):
     out = webapp2.RequestHandler.dispatch(self)
 
     # Let angular know about our XSRF-TOKEN
-    self.response.set_cookie("XSRF-TOKEN", self.get_csrf_token())
+    self.response.set_cookie(self.XSRF_TOKEN_KEY, self.get_csrf_token())
 
     # save session.
     self.session_store.save_sessions(self.response)
@@ -44,7 +48,7 @@ class BaseHandler(webapp2.RequestHandler):
     return out
 
   def get_csrf_token(self):
-    token = self.session.get('csrf_token', None)
+    token = self.session.get(self.XSRF_TOKEN_KEY, None)
 
     if token is None:
       token = self.regenerate_csrf_token()
@@ -54,7 +58,7 @@ class BaseHandler(webapp2.RequestHandler):
     session_cookie = self.request.cookies.get('session')
     token = xsrfutil.generate_token(xsrf_secret_key(), session_cookie)
 
-    self.session['csrf_token'] = token
+    self.session[self.XSRF_TOKEN_KEY] = token
     return token
 
   @webapp2.cached_property
@@ -96,5 +100,6 @@ class ApiHandler(BaseHandler):
       message = str(exception)
 
     self.response.out.write(json.dumps({
-      'message': message
+      'message': message,
+      'stacktrace': traceback.format_exc()
     }))

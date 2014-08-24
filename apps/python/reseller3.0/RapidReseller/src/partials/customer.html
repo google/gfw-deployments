@@ -4,10 +4,10 @@
 </p>
 <p>
 <form name="domainForm" ng-submit="customer.submit()" novalidate class="form-horizontal" role="form">
-    <div class="form-group" ng-class="{'has-error': domainForm.customerDomain.$invalid}">
-        <label class="control-label input-lg col-sm-4">Customer Domain</label>
+    <div class="form-group has-feedback" ng-class="{'has-error': domainForm.customerDomain.$invalid}">
+        <label class="control-label col-sm-4">Customer Domain</label>
         <div class="col-sm-8">
-            <input class="form-control input-lg"
+            <input class="form-control"
                    type="text"
                    name="customerDomain"
                    ng-model="customer.customerDomain"
@@ -15,11 +15,15 @@
                    required
                    ng-minlength="3"
                    ng-pattern="/.*\..*/">
+            <div class="has-error">
+                <span class="glyphicon glyphicon-ok has-error form-control-feedback"></span>
+            </div>
+
         </div>
     </div>
     <div class="panel panel-default">
         <div class="panel-body">
-            <div class="form-group">
+            <div class="form-group has-feedback">
                 <label class="control-label col-sm-4">Alternate Email</label>
 
                 <div class="col-sm-5" ng-class="{'has-error': domainForm.alternateEmail.$invalid}">
@@ -29,10 +33,15 @@
                            ng-model="customer.alternateEmail"
                            ng-required="true"
                            required
+                           ng-pattern="/.*@.*\..*/"
                            ng-minlength="3">
+                    <div class="has-error">
+                        <span class="glyphicon glyphicon-ok has-error form-control-feedback"></span>
+                    </div>
                 </div>
+
             </div>
-            <div class="form-group">
+            <div class="form-group has-feedback">
                 <label class="control-label col-sm-4">Phone Number</label>
 
                 <div class="col-sm-5" ng-class="{'has-error': domainForm.phoneNumber.$invalid}">
@@ -43,10 +52,14 @@
                            ng-required="true"
                            required
                            ng-minlength="3">
+                    <div class="has-error">
+                        <span class="glyphicon glyphicon-ok has-error form-control-feedback"></span>
+                    </div>
                 </div>
+
             </div>
 
-            <div class="form-group">
+            <div class="form-group has-feedback">
                 <label class="control-label col-sm-4">Contact Name</label>
 
                 <div class="col-sm-5" ng-class="{'has-error': domainForm.contactName.$invalid}">
@@ -57,10 +70,13 @@
                            ng-required="true"
                            required
                            ng-minlength="3">
+                    <div class="has-error">
+                        <span class="glyphicon glyphicon-ok has-error form-control-feedback"></span>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group has-feedback">
                 <label class="control-label col-sm-4">Organization Name</label>
 
                 <div class="col-sm-5" ng-class="{'has-error': domainForm.organizationName.$invalid}">
@@ -71,10 +87,13 @@
                            ng-required="true"
                            required
                            ng-minlength="3">
+                    <div class="has-error">
+                        <span class="glyphicon glyphicon-ok has-error form-control-feedback"></span>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group has-feedback">
                 <label class="control-label col-sm-4">Address Line 1</label>
 
                 <div class="col-sm-5" ng-class="{'has-error': domainForm.addressLine1.$invalid}">
@@ -85,11 +104,26 @@
                            ng-required="true"
                            required
                            max-length="2">
+                    <div class="has-error">
+                        <span class="glyphicon glyphicon-ok has-error form-control-feedback"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group has-feedback">
+                <label class="control-label col-sm-4">Address Line 2</label>
+
+                <div class="col-sm-5" ng-class="{'has-error': domainForm.addressLine2.$invalid}">
+                    <input class="form-control"
+                           type="text"
+                           name="addressLine2"
+                           ng-model="customer.addressLine2"
+                           max-length="2">
                 </div>
             </div>
 
 
-            <div class="form-group">
+            <div class="form-group has-feedback">
                 <label class="control-label col-sm-4">Locality</label>
 
                 <div class="col-sm-5" ng-class="{'has-error': domainForm.locality.$invalid}">
@@ -99,10 +133,13 @@
                            ng-model="customer.locality"
                            ng-required="true"
                            required>
+                    <div class="has-error">
+                        <span class="glyphicon glyphicon-ok has-error form-control-feedback"></span>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group has-feedback">
                 <label class="control-label col-sm-4">Region</label>
 
                 <div class="col-sm-5" ng-class="{'has-error': domainForm.region.$invalid}">
@@ -112,10 +149,13 @@
                            ng-model="customer.region"
                            ng-required="true"
                            required>
+                    <div class="has-error">
+                        <span class="glyphicon glyphicon-ok has-error form-control-feedback"></span>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group has-feedback">
                 <label class="control-label col-sm-4">Country Code</label>
 
                 <div class="col-sm-5" ng-class="{'has-error': domainForm.countryCode.$invalid}">
@@ -126,10 +166,14 @@
                            ng-required="true"
                            required
                            max-length="2">
+                    <div class="has-error">
+                        <span class="glyphicon glyphicon-ok has-error form-control-feedback"></span>
+                    </div>
                 </div>
+
             </div>
 
-            <div class="form-group">
+            <div class="form-group has-feedback">
                 <label class="control-label col-sm-4">Postal Code</label>
 
                 <div class="col-sm-5" ng-class="{'has-error': domainForm.postalCode.$invalid}">
@@ -140,17 +184,19 @@
                            ng-required="true"
                            required
                            max-length="2">
+                    <div class="has-error">
+                        <span class="glyphicon glyphicon-ok has-error form-control-feedback"></span>
+                    </div>
                 </div>
             </div>
 
         </div>
     </div>
 
-
     <div class="form-group">
         <label class="control-label col-sm-4"></label>
         <div class="col-sm-5">
-            <input type="submit" value="Next &raquo;" class="btn btn-primary" ng-disabled="domainForm.$invalid">
+            <input type="submit" value="Next &raquo;" class="btn btn-primary" ng-disabled="domainForm.$invalid || $root.__CURRENT_HTTP_STATE==1">
             <loading-indicator></loading-indicator>
         </div>
 
