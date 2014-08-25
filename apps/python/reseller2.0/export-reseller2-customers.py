@@ -52,7 +52,7 @@ from gdata.client import RequestError
 DOMAIN_FEED_TEMPLATE = "/a/feeds/reseller/%s/%s/domain"
 TRANSFER_TOKEN_TEMPLATE = "/a/feeds/reseller/%s/%s/domain/%s/transferToken"
 DOMAIN_ENTRY_TEMPLATE = "/a/feeds/reseller/%s/%s/domain/%s"
-SUSPEND_ENTRY_TEMPALTE = "/a/feeds/reseller/%s/%s/domain/%s/suspend"
+SUSPEND_ENTRY_TEMPLATE = "/a/feeds/reseller/%s/%s/domain/%s/suspend"
 
 
 class Reseller2Client(gdata.client.GDClient):
@@ -99,6 +99,10 @@ class Reseller2Client(gdata.client.GDClient):
       else:
         domain_uri = None
 
+  def get_all_domainnames(self):
+    for entry in self.get_all_domains():
+      yield entry._other_elements[1]._other_attributes['value']
+
   def get_domain(self, domain):
     domain_uri = DOMAIN_ENTRY_TEMPLATE % (self.api_version,
                                           self.domain,
@@ -120,7 +124,7 @@ class Reseller2Client(gdata.client.GDClient):
                           desired_class=gdata.data.GDFeed)
 
   def get_suspend_status(self, domain):
-    suspend_uri = SUSPEND_ENTRY_TEMPALTE % (self.api_version,
+    suspend_uri = SUSPEND_ENTRY_TEMPLATE % (self.api_version,
                                             self.domain,
                                             domain)
 
@@ -137,6 +141,10 @@ class Reseller2Client(gdata.client.GDClient):
     return self.get_entry(uri=token_uri,
                           desired_class=gdata.data.GDEntry)
 
+
+def get_all_domainnames_from_csv(intr):
+  for row in intr:
+    yield row.get('domain')
 
 def main(args):
   client = Reseller2Client(domain=args.domain)
@@ -164,9 +172,17 @@ def main(args):
                           ])
   writer.writeheader()
 
-  for entry in client.get_all_domains():
-    # pull out the domainName
-    domainName = entry._other_elements[1]._other_attributes['value']
+  if args.in_file:
+    # user has requested an update.
+    reader = csv.DictReader(open(args.in_file, 'rb'))
+    intr = get_all_domainnames_from_csv(reader)
+  else:
+    # user has requested a new file.
+    intr = client.get_all_domainnames()
+
+  for domainName in intr:
+    # fetch information about a domain
+    domain_entry = client.get_domain(domain=domainName)
 
     print "Fetching info for %s ..." % domainName
 
@@ -183,9 +199,6 @@ def main(args):
     # pull out the values of interest.
     expiry = token_entry._other_elements[1]._other_attributes['value']
     token = token_entry._other_elements[2]._other_attributes['value']
-
-    # fetch information about a domain
-    domain_entry = client.get_domain(domain=domainName)
 
     # see if the domain is in a suspended state.
     isSuspended = "UNKNOWN"
@@ -226,9 +239,6 @@ def main(args):
       'userCount': userCount
     })
 
-    # keep the QPS something reasonable.
-    time.sleep(1)
-
 
 if __name__ == "__main__":
   args = ArgumentParser()
@@ -241,5 +251,8 @@ if __name__ == "__main__":
                     help="Reseller domain (e.g. 'reseller.acmecorp.com')")
   args.add_argument("--out",
                     help="Output file for report (e.g. 'out.csv')")
+  args.add_argument("--in_file",
+                    help="(optional) input file to take and update with new tracing tokens and info",
+                    default=None)
 
   main(args.parse_args())
