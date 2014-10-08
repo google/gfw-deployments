@@ -1,7 +1,8 @@
 var CustomerController = function($http,
                                   $location,
                                   AlertChannelService,
-                                  CurrentDomainService) {
+                                  CurrentDomainService,
+                                  SETTINGS) {
   var domain = 'demo-' + new Date().getTime() + '.resold.richieforeman.net';
   this.customerDomain = domain;
   this.alternateEmail = 'nobody@google.com';
@@ -13,22 +14,25 @@ var CustomerController = function($http,
   this.countryCode = 'US';
   this.postalCode = '11101';
   this.addressLine1 = '76 9th Ave';
+  this.addressLine2 = '';
 
   this.$http = $http;
   this.$location = $location;
+  this.$settings = SETTINGS;
   this.$alertChannelService = AlertChannelService;
   this.$currentDomainService = CurrentDomainService;
-}
+};
 
 CustomerController.prototype.submit = function() {
   var self = this;
 
-  self.$http.post('/api/createCustomer', {
+  self.$http.post(self.$settings.CREATE_CUSTOMER_ENDPOINT, {
     'domain': self.customerDomain,
     'alternateEmail': self.alternateEmail,
     'phoneNumber': self.phoneNumber,
     'postalAddress.contactName': self.contactName,
     'postalAddress.addressLine1': self.addressLine1,
+    'postalAddress.addressLine2': self.addressLine2,
     'postalAddress.organizationName': self.organizationName,
     'postalAddress.locality': self.locality,
     'postalAddress.region': self.region,

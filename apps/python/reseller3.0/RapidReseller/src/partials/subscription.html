@@ -10,8 +10,9 @@
         All subscriptions can be billed yearly, or on a monthly basis.
     </p>
         <form name="subscriptionForm" method="POST" ng-submit="subscription.submit()" class="form-horizontal">
+            <div class="form-group"></div>
             <div class="form-group" ng-class="{'has-error': subscriptionForm.numberOfSeats.$invalid}">
-                <label class="control-label col-sm-2">Seat Count</label>
+                <label class="control-label col-sm-4">Seat Count</label>
                 <div class="col-sm-5">
                    <input type="text"
                        class="form-control"
@@ -20,17 +21,54 @@
                        integer
                        ng-required="true">
                 </div>
-
             </div>
             <div class="form-group">
-                <div class="col-sm-2">
-                    ...
+                <label class="control-label col-sm-4">SkuId</label>
+                <div class="col-sm-5">
+                    <select name="skuId"
+                            class="form-control"
+                            ng-model="subscription.skuId"
+                            ng-options="v as v.label for v in subscription.gabSkuIds"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Plan Name</label>
+                <div class="col-sm-5">
+                    <select name="skuId"
+                            class="form-control"
+                            ng-model="subscription.planName"
+                            ng-options="v as v.label for v in subscription.planNameOptions"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Renewal Type</label>
+                <div class="col-sm-5">
+                    <select name="renewalType"
+                            class="form-control"
+                            ng-model="subscription.renewalType"
+                            ng-options="v as v.label for v in subscription.renewalTypeOptions"></select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">Purchase Order Id</label>
+                <div class="col-sm-5">
+                   <input type="text"
+                       class="form-control"
+                       name="purchaseOrderId"
+                       ng-model="subscription.purchaseOrderId">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-4">
+                    &nbsp;
                 </div>
                 <div class="col-sm-5">
                     <input type="submit"
                            value="Next &raquo;"
                            class="btn btn-primary"
-                           ng-disabled="subscriptionForm.$invalid">
+                           ng-disabled="subscriptionForm.$invalid || $root.__CURRENT_HTTP_STATE == 1">
                     <loading-indicator></loading-indicator>
                 </div>
             </div>

@@ -6,8 +6,21 @@
     method using the following value:
 </p>
 
-<pre class="maia-promo">
+<pre>
     {{siteVerificationConfirm.verificationInfo.verificationToken}}
 </pre>
+<div class="panel panel-default">
+    <div class="panel-body" ng-switch="siteVerificationConfirm.verificationInfo.verificationMethod">
+        <div ng-switch-when="FILE">
+            When validating using the FILE method, Google will make an http request to
+        </div>
+    </div>
 
-<a ng-click="siteVerificationConfirm.next()" class="btn btn-primary">Validate Site &raquo;</a>
+</div>
+<div>
+
+</div>
+
+<a ng-click="siteVerificationConfirm.next()" class="btn btn-primary">
+    Validate Site &raquo;</span>
+</a>

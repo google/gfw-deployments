@@ -1,6 +1,10 @@
 body {
     padding-top: 60px;
     padding-bottom: 20px;
+
+}
+body, h1, h2, h3, h4, h5, h6 {
+    font-family: 'RobotoDraft', sans-serif !important;
 }
 
 .loading-indicator {
@@ -21,9 +25,9 @@ body {
 }
 
 .blink-angry {
-    -webkit-animation: blink .1s linear infinite;
-    -moz-animation: blink .1s linear infinite;
-    animation: blink .1s linear infinite;
+    -webkit-animation: blink .5s linear infinite;
+    -moz-animation: blink .5s linear infinite;
+    animation: blink .5s linear infinite;
 }
 
 .blink {

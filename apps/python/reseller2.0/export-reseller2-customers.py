@@ -52,175 +52,207 @@ from gdata.client import RequestError
 DOMAIN_FEED_TEMPLATE = "/a/feeds/reseller/%s/%s/domain"
 TRANSFER_TOKEN_TEMPLATE = "/a/feeds/reseller/%s/%s/domain/%s/transferToken"
 DOMAIN_ENTRY_TEMPLATE = "/a/feeds/reseller/%s/%s/domain/%s"
-SUSPEND_ENTRY_TEMPALTE = "/a/feeds/reseller/%s/%s/domain/%s/suspend"
+SUSPEND_ENTRY_TEMPLATE = "/a/feeds/reseller/%s/%s/domain/%s/suspend"
+
 
 class Reseller2Client(gdata.client.GDClient):
-    host = "apps-apis.google.com"
-    api_version = "2.0"
-    ssl = True
-    auth_service = "apps"
-    domain = None
+  host = "apps-apis.google.com"
+  api_version = "2.0"
+  ssl = True
+  auth_service = "apps"
+  domain = None
 
-    def __init__(self, domain, auth_token=None, **kwargs):
-        gdata.client.GDClient.__init__(self,
-                                       auth_token=auth_token,
-                                       **kwargs)
-        self.domain = domain
+  def __init__(self, domain, auth_token=None, **kwargs):
+    gdata.client.GDClient.__init__(self,
+                                   auth_token=auth_token,
+                                   **kwargs)
+    self.domain = domain
 
-    def get_all_domains(self):
-        '''
-        A generator that transparently pages through
-        a gdata feed of domains and yields each entry.
-        '''
-        print "Fetching page of domains... "
+  def get_all_domains(self):
+    '''
+    A generator that transparently pages through
+    a gdata feed of domains and yields each entry.
+    '''
+    print "Fetching page of domains... "
 
-        domain_uri = DOMAIN_FEED_TEMPLATE % (self.api_version,
-                                     self.domain)
+    domain_uri = DOMAIN_FEED_TEMPLATE % (self.api_version,
+                                         self.domain)
 
-        while domain_uri is not None:
-            feed = self.get_entry(uri=domain_uri,
-                                  desired_class=gdata.data.GDFeed)
+    while domain_uri is not None:
+      feed = None
+      for n in range(0, 5):
+        try:
+          feed = self.get_entry(uri=domain_uri,
+                                desired_class=gdata.data.GDFeed)
+          break
+        except:
+          time.sleep((2 ** n) + random.random())
 
-            for e in feed.entry:
-                yield e
+      if feed is None:
+        continue
 
-            # keep the QPS something reasonable.
-            time.sleep(1)
+      for e in feed.entry:
+        yield e
 
-            if feed.GetNextLink():
-                domain_uri = feed.GetNextLink().href
-            else:
-                domain_uri = None
+      if feed.GetNextLink():
+        domain_uri = feed.GetNextLink().href
+      else:
+        domain_uri = None
 
-    def get_domain(self, domain):
-        domain_uri = DOMAIN_ENTRY_TEMPLATE % (self.api_version,
-                                              self.domain,
-                                              domain)
+  def get_all_domainnames(self):
+    for entry in self.get_all_domains():
+      yield entry._other_elements[1]._other_attributes['value']
 
-        return self.get_entry(uri=domain_uri, desired_class=gdata.data.GDEntry)
+  def get_domain(self, domain):
+    domain_uri = DOMAIN_ENTRY_TEMPLATE % (self.api_version,
+                                          self.domain,
+                                          domain)
 
-    def list_domains(self, startDomainName=''):
-        '''
-        A simple single page list call.
-        '''
-        domain_uri = DOMAIN_FEED_TEMPLATE % (self.api_version,
-                                             self.domain)
+    return self.get_entry(uri=domain_uri, desired_class=gdata.data.GDEntry)
 
-        domain_uri = atom.http_core.Uri.parse_uri(domain_uri)
-        domain_uri.query['startDomainName'] = startDomainName
+  def list_domains(self, startDomainName=''):
+    '''
+    A simple single page list call.
+    '''
+    domain_uri = DOMAIN_FEED_TEMPLATE % (self.api_version,
+                                         self.domain)
 
-        return self.get_entry(uri=domain_uri,
-                              desired_class=gdata.data.GDFeed)
+    domain_uri = atom.http_core.Uri.parse_uri(domain_uri)
+    domain_uri.query['startDomainName'] = startDomainName
 
-    def get_suspend_status(self, domain):
-        suspend_uri = SUSPEND_ENTRY_TEMPALTE % (self.api_version,
-                                                self.domain,
-                                                domain)
+    return self.get_entry(uri=domain_uri,
+                          desired_class=gdata.data.GDFeed)
 
-        return self.get_entry(uri=suspend_uri,
-                              desired_class=gdata.data.GDEntry)
+  def get_suspend_status(self, domain):
+    suspend_uri = SUSPEND_ENTRY_TEMPLATE % (self.api_version,
+                                            self.domain,
+                                            domain)
 
-    def get_transfer_token(self, domain):
-        '''
-        Given a reseller domain, fetch the transfer token.
-        '''
-        token_uri = TRANSFER_TOKEN_TEMPLATE % (self.api_version,
-                                               self.domain,
-                                               domain)
-        return self.get_entry(uri=token_uri,
-                              desired_class=gdata.data.GDEntry)
+    return self.get_entry(uri=suspend_uri,
+                          desired_class=gdata.data.GDEntry)
+
+  def get_transfer_token(self, domain):
+    '''
+    Given a reseller domain, fetch the transfer token.
+    '''
+    token_uri = TRANSFER_TOKEN_TEMPLATE % (self.api_version,
+                                           self.domain,
+                                           domain)
+    return self.get_entry(uri=token_uri,
+                          desired_class=gdata.data.GDEntry)
+
+
+def get_all_domainnames_from_csv(intr):
+  for row in intr:
+    yield row.get('domain')
 
 def main(args):
-    client = Reseller2Client(domain=args.domain)
+  client = Reseller2Client(domain=args.domain)
 
-    auth_token = client.client_login(email=args.admin,
-                                     password=args.password,
-                                     source="edt-reseller2.0-tokendump")
+  auth_token = client.client_login(email=args.admin,
+                                   password=args.password,
+                                   source="edt-reseller2.0-tokendump")
 
-    prov_client = MultiDomainProvisioningClient(domain=args.domain)
-    prov_client.auth_token = auth_token
+  #client.http_client.debug = True
 
-    writer = csv.DictWriter(open(args.out, 'wb'),
-                            fieldnames=[
-                                'domain',
-                                'token',
-                                'expiry',
-                                'edition',
-                                'maximumNumberOfUsers',
-                                'countryCode',
-                                'creationTime',
-                                'isSuspended',
-                                'userCount'
-                            ])
-    writer.writeheader()
+  prov_client = MultiDomainProvisioningClient(domain=args.domain)
+  prov_client.auth_token = auth_token
 
-    for entry in client.get_all_domains():
-        # pull out the domainName
-        domainName = entry._other_elements[1]._other_attributes['value']
-        print "Fetching info for %s ..." % domainName
+  writer = csv.DictWriter(open(args.out, 'wb'),
+                          fieldnames=[
+                            'domain',
+                            'token',
+                            'expiry',
+                            'edition',
+                            'maximumNumberOfUsers',
+                            'countryCode',
+                            'creationTime',
+                            'isSuspended',
+                            'userCount'
+                          ])
+  writer.writeheader()
 
-        # fetch the transfer tokens
-        token_entry = client.get_transfer_token(domain=domainName)
+  if args.in_file:
+    # user has requested an update.
+    reader = csv.DictReader(open(args.in_file, 'rb'))
+    intr = get_all_domainnames_from_csv(reader)
+  else:
+    # user has requested a new file.
+    intr = client.get_all_domainnames()
 
-        # pull out the values of interest.
-        expiry = token_entry._other_elements[1]._other_attributes['value']
-        token = token_entry._other_elements[2]._other_attributes['value']
+  for domainName in intr:
+    # fetch information about a domain
+    domain_entry = client.get_domain(domain=domainName)
 
-        # fetch information about a domain
-        domain_entry = client.get_domain(domain=domainName)
+    print "Fetching info for %s ..." % domainName
 
-        # see if the domain is in a suspended state.
-        isSuspended = "UNKNOWN"
-        for n in range(0, 5):
-            try:
-                suspend_entry = client.get_suspend_status(domainName)
-                isSuspended = suspend_entry._other_elements[1]._other_attributes['value']
-                break
-            except RequestError:
-                time.sleep((2 ** n) + random.random())
+    # fetch the transfer tokens
+    try:
+      token_entry = client.get_transfer_token(domain=domainName)
+    except:
+      writer.writerow({
+        'domain': domainName.encode('ascii', 'ignore'),
+        'token': '-- FAILED! --'
+      })
+      continue
 
-        # pull out values of interest.
-        edition = domain_entry._other_elements[1]._other_attributes['value']
-        maximumNumberOfUsers = domain_entry._other_elements[2]._other_attributes['value']
-        countryCode = domain_entry._other_elements[3]._other_attributes['value']
-        creationTime = domain_entry._other_elements[5]._other_attributes['value']
+    # pull out the values of interest.
+    expiry = token_entry._other_elements[1]._other_attributes['value']
+    token = token_entry._other_elements[2]._other_attributes['value']
 
-        # attempt to find the current user count of the entire instance.
-        prov_client.domain = domainName
-        userCount = "UNKNOWN"
+    # see if the domain is in a suspended state.
+    isSuspended = "UNKNOWN"
+    for n in range(0, 5):
+      try:
+        suspend_entry = client.get_suspend_status(domainName)
+        isSuspended = suspend_entry._other_elements[1]._other_attributes['value']
+        break
+      except RequestError:
+        time.sleep((2 ** n) + random.random())
 
-        for n in range(0, 5):
-            try:
-                userCount = len(prov_client.retrieve_all_users().entry)
-                break
-            except RequestError:
-                time.sleep((2 ** n) + random.random())
+    # pull out values of interest.
+    edition = domain_entry._other_elements[1]._other_attributes['value']
+    maximumNumberOfUsers = domain_entry._other_elements[2]._other_attributes['value']
+    countryCode = domain_entry._other_elements[3]._other_attributes['value']
+    creationTime = domain_entry._other_elements[5]._other_attributes['value']
 
-        writer.writerow({
-            'domain': domainName.encode('ascii', 'ignore'),
-            'token': token,
-            'expiry': expiry,
-            'edition': edition,
-            'maximumNumberOfUsers': maximumNumberOfUsers,
-            'countryCode': countryCode.encode('ascii', 'ignore'),
-            'creationTime': creationTime,
-            'isSuspended': isSuspended,
-            'userCount': userCount
-        })
+    # attempt to find the current user count of the entire instance.
+    prov_client.domain = domainName
+    userCount = "UNKNOWN"
 
-        # keep the QPS something reasonable.
-        time.sleep(1)
+    for n in range(0, 5):
+      try:
+        userCount = len(prov_client.retrieve_all_users().entry)
+        break
+      except RequestError:
+        time.sleep((2 ** n) + random.random())
+
+    writer.writerow({
+      'domain': domainName.encode('ascii', 'ignore'),
+      'token': token,
+      'expiry': expiry,
+      'edition': edition,
+      'maximumNumberOfUsers': maximumNumberOfUsers,
+      'countryCode': countryCode.encode('ascii', 'ignore'),
+      'creationTime': creationTime,
+      'isSuspended': isSuspended,
+      'userCount': userCount
+    })
+
 
 if __name__ == "__main__":
-    args = ArgumentParser()
+  args = ArgumentParser()
 
-    args.add_argument("--admin",
-                      help="Administrative user on the reseller domain")
-    args.add_argument("--password",
-                      help="Password for the administrative user")
-    args.add_argument("--domain",
-                      help="Reseller domain (e.g. 'reseller.acmecorp.com')")
-    args.add_argument("--out",
-                      help="Output file for report (e.g. 'out.csv')")
+  args.add_argument("--admin",
+                    help="Administrative user on the reseller domain")
+  args.add_argument("--password",
+                    help="Password for the administrative user")
+  args.add_argument("--domain",
+                    help="Reseller domain (e.g. 'reseller.acmecorp.com')")
+  args.add_argument("--out",
+                    help="Output file for report (e.g. 'out.csv')")
+  args.add_argument("--in_file",
+                    help="(optional) input file to take and update with new tracing tokens and info",
+                    default=None)
 
-    main(args.parse_args())
+  main(args.parse_args())

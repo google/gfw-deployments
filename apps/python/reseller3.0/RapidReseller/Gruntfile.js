@@ -15,12 +15,25 @@ module.exports = function(grunt) {
       },
       js: {
         vendor: [
-          '<%= bowerDir %>/jquery/jquery.js',
-          '<%= bowerDir %>/angular/angular.js',
-          '<%= bowerDir %>/angular-route/angular-route.js',
-          '<%= bowerDir %>/bootstrap/dist/js/bootstrap.js',
-          '<%= bowerDir %>/angular-bootstrap/ui-bootstrap.js',
-          '<%= bowerDir %>/angular-bootstrap/ui-bootstrap-tpls.js'
+          '<%= bowerDir %>/jquery/dist/jquery.min.js',
+          '<%= bowerDir %>/angular/angular.min.js',
+          '<%= bowerDir %>/angular-route/angular-route.min.js',
+          '<%= bowerDir %>/bootstrap/dist/js/bootstrap.min.js',
+          '<%= bowerDir %>/angular-bootstrap/ui-bootstrap.min.js',
+          '<%= bowerDir %>/angular-bootstrap/ui-bootstrap-tpls.min.js'
+        ]
+      }
+    },
+
+    copy: {
+      bootstrap_fonts: {
+        files: [
+          {
+            expand: true,
+            cwd: '<%= bowerDir %>/bootstrap/dist/fonts',
+            src:['**'],
+            dest: '<%= appDir %>/fonts'
+          }
         ]
       }
     },
@@ -40,6 +53,7 @@ module.exports = function(grunt) {
         files: {
           '<%= appDir %>/js/app.compiled.js': [
             '<%= srcDir %>/js/app.js',
+            '<%= srcDir %>/js/settings.js',
             '<%= srcDir %>/js/routes.js',
             '<%= srcDir %>/js/modules/*.js',
             '<%= srcDir %>/js/config/*.js',
@@ -97,20 +111,6 @@ module.exports = function(grunt) {
       }
     },
 
-    // uglify js for production
-    uglify: {
-      default: {
-        files: {
-          '<%= appDir %>/js/app.compiled.js': [
-            '<%= appDir %>/js/app.compiled.js'
-          ],
-          '<%= appDir %>/js/vendor.js': [
-            '<%= appDir %>/js/vendor.js'
-          ]
-        }
-      }
-    },
-
     ngtemplates: {
       app: {
         cwd: '<%= srcDir %>/',
@@ -151,7 +151,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-ngmin');
   grunt.loadNpmTasks('grunt-karma');
@@ -173,15 +172,13 @@ module.exports = function(grunt) {
     grunt.task.run('ngtemplates');
     grunt.task.run('concat:app');
 
+
     if (this.target == 'all' || this.target == 'prod') {
+      grunt.task.run('copy:bootstrap_fonts');
       grunt.task.run('concat:vendor');
       grunt.task.run('ngmin');
     } else {
       grunt.task.run('ngmin:app');
-    }
-
-    if (this.target == 'prod') {
-      grunt.task.run('uglify');
     }
 
   });
