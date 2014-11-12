@@ -9,9 +9,7 @@
     '#\/api\/createSubscription$#'            => StepTwoHandler,
     '#\/api\/getSiteValidationToken$#'        => StepThreeHandler,
     '#\/api\/testValidation$#'                => StepFourHandler,
-    '#\/api\/createUser$#'                    => StepFiveHandler,
-    '#\/api\/createDriveStorageSubscription'  => StepSixHandler,
-    '#\/api\/assignDriveLicense'              => StepSevenHandler
+    '#\/api\/createUser$#'                    => StepFiveHandler
   ));
 
   $app->run();

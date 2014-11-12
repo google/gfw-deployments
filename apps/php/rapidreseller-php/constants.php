@@ -7,7 +7,8 @@ class ResellerProduct {
 }
 
 class ResellerSKU {
-    const GoogleApps = "Google-Apps-For-Business";
+    const GoogleAppsForBusiness = "Google-Apps-For-Business";
+    const GoogleAppsForUnlimited = "Google-Apps-Unlimited";
     const GoogleDriveStorage20GB = "Google-Drive-storage-20GB";
     const GoogleDriveStorage50GB = "Google-Drive-storage-50GB";
     const GoogleDriveStorage200GB = "Google-Drive-storage-200GB";
@@ -21,8 +22,11 @@ class ResellerSKU {
 }
 
 class ResellerPlanName {
-    // Annual plan
-    const ANNUAL = "ANNUAL";
+    // Annual monthly pay
+    const ANNUAL_MONTHLY_PAY = "ANNUAL_MONTHLY_PAY";
+
+    // Annual yearly pay
+    const ANNUAL_YEARLY_PAY = "ANNUAL_YEARLY_PAY";
 
     // Month-to-month plan
     const FLEXIBLE = "FLEXIBLE";

@@ -28,17 +28,12 @@
         'http://oauth.net/grant_type/jwt/1.0/bearer',
         $SETTINGS['RESELLER_ADMIN']
       ));
-
-      if($client->getAuth()->isAccessTokenExpired()) {
-        $client->getAuth()->refreshTokenWithAssertion($cred);
-      }
       return $client;
     }
   }
 
 
   class IndexHandler extends RequestHandler {
-
     function get() {
       include "templates/base.html";
     }
@@ -57,22 +52,23 @@
         // Exception is good in this case.
       }
 
-      $customer = new Google_Service_Reseller_Customer();
-      $customer->setCustomerDomain($json_data['domain']);
-      $customer->setAlternateEmail($json_data['alternateEmail']);
-      $customer->setPhoneNumber($json_data['phoneNumber']);
-
-      $address = new Google_Service_Reseller_Address();
-      $address->setContactName($json_data['postalAddress.contactName']);
-      $address->setOrganizationName($json_data['postalAddress.organizationName']);
-      $address->setLocality($json_data['postalAddress.locality']);
-      $address->setCountryCode($json_data['postalAddress.countryCode']);
-      $address->setRegion($json_data['postalAddress.region']);
-      $address->setPostalCode($json_data['postalAddress.postalCode']);
-      $address->setAddressLine1($json_data['postalAddress.addressLine1']);
-      $customer->setPostalAddress($address);
+      $customer = new Google_Service_Reseller_Customer(array(
+        'customerDomain' => $json_data['domain'],
+        'alternateEmail' => $json_data['alternateEmail'],
+        'phoneNumber' => $json_data['phoneNumber'],
+        'postalAddress' => array(
+          'contactName' => $json_data['postalAddress.contactName'],
+          'organizationName' => $json_data['postalAddress.organizationName'],
+          'locality' => $json_data['postalAddress.locality'],
+          'countryCode'=> $json_data['postalAddress.countryCode'],
+          'region' => $json_data['postalAddress.region'],
+          'postalCode' => $json_data['postalAddress.postalCode'],
+          'addressLine1' => $json_data['postalAddress.addressLine1']
+        )
+      ));
 
       $reseller->customers->insert($customer);
+
     }
   }
 
@@ -83,24 +79,21 @@
 
       $service = new Google_Service_Reseller(GoogleClientHelper::GetClient());
 
-      $subscription = new Google_Service_Reseller_Subscription();
-      $subscription->setCustomerId($json_data['domain']);
-      $subscription->setSubscriptionId($json_data['domain'] . "-apps");
-      $subscription->setSkuId(ResellerSKU::GoogleApps);
-      $subscription->setPurchaseOrderId('G00gl39001');
-
-      $plan = new Google_Service_Reseller_SubscriptionPlan();
-      $plan->setPlanName(ResellerPlanName::FLEXIBLE);
-      $subscription->setPlan($plan);
-
-      $seats = new Google_Service_Reseller_Seats();
-      $seats->setNumberOfSeats($json_data['numberOfSeats']);
-      $seats->setMaximumNumberOfSeats($json_data['numberOfSeats']);
-      $subscription->setSeats($seats);
-
-      $renewalSettings = new Google_Service_Reseller_RenewalSettings();
-      $renewalSettings->setRenewalType(ResellerRenewalType::PAY_AS_YOU_GO);
-      $subscription->setRenewalSettings($renewalSettings);
+      $subscription = new Google_Service_Reseller_Subscription(array(
+        'customerId' => $json_data['domain'],
+        'skuId' => ResellerSKU::GoogleAppsForBusiness,
+        'purchaseOrderId' => 'G00gle-9001',
+        'plan' => array(
+          'planName' => ResellerPlanName::FLEXIBLE
+        ),
+        'seats' => array(
+          'numberOfSeats' => $json_data['numberOfSeats'],
+          'maximumNumberOfSeats' => $json_data['numberOfSeats']
+        ),
+        'renewalSettings' => array(
+          'renewalType' => ResellerRenewalType::PAY_AS_YOU_GO
+        )
+      ));
 
       $service->subscriptions->insert($json_data['domain'], $subscription);
     }
@@ -117,13 +110,13 @@
       $service = new Google_Service_SiteVerification(
         GoogleClientHelper::GetClient());
 
-      $request = new Google_Service_SiteVerification_SiteVerificationWebResourceGettokenRequest();
-      $request->setVerificationMethod($verification_method);
-
-      $site = new Google_Service_SiteVerification_SiteVerificationWebResourceGettokenRequestSite();
-      $site->setType($verification_type);
-      $site->setIdentifier($identifier);
-      $request->setSite($site);
+      $request = new Google_Service_SiteVerification_SiteVerificationWebResourceGettokenRequest(array(
+        'verificationMethod' => $verification_method,
+        'site' => array(
+          'type' => $verification_type,
+          'identifier' => $identifier
+        )
+      ));
 
       $response = $service->webResource->getToken($request);
 
@@ -139,7 +132,6 @@
 
   class StepFourHandler extends RequestHandler {
     function post() {
-      //pass
       $json_data = $this->json_data;
 
       $verification_type = $json_data['verificationType'];
@@ -149,12 +141,12 @@
       $service = new Google_Service_SiteVerification(
         GoogleClientHelper::GetClient());
 
-      $request = new Google_Service_SiteVerification_SiteVerificationWebResourceResource();
-
-      $site = new Google_Service_SiteVerification_SiteVerificationWebResourceResourceSite();
-      $site->setType($verification_type);
-      $site->setIdentifier($verification_identifier);
-      $request->setSite($site);
+      $request = new Google_Service_SiteVerification_SiteVerificationWebResourceResource(array(
+        'site' => array(
+          'type' => $verification_type,
+          'identifier' => $verification_identifier
+        )
+      ));
 
       $service->webResource->insert($verification_method, $request);
     }
@@ -165,27 +157,28 @@
       $json_data = $this->json_data;
 
       $domain = $json_data['domain'];
-      $username = "admin@" . $domain;
+      $primaryEmail = "admin@" . $domain;
       $password = "P@ssw0rd!!";
 
       $service = new Google_Service_Directory(GoogleClientHelper::GetClient());
 
-      $user = new Google_Service_Directory_User();
-      $user->setPrimaryEmail($username);
-      $user->setSuspended(false);
-      $user->setPassword($password);
-
-      $name = new Google_Service_Directory_UserName();
-      $name->setGivenName("Admin");
-      $name->setFamilyName("Admin");
-      $name->setFullName("Admin Admin");
-      $user->setName($name);
+      $user = new Google_Service_Directory_User(array(
+        'primaryEmail' => $primaryEmail,
+        'suspended' => FALSE,
+        'password' => $password,
+        'name' => array(
+          'givenName' =>'Admin',
+          'familyName' => 'Admin',
+          'fullName' => 'Admin Admin'
+        )
+      ));
 
       $service->users->insert($user);
 
-      $makeAdmin = new Google_Service_Directory_UserMakeAdmin();
-      $makeAdmin->setStatus(true);
-      $service->users->makeAdmin($username, $makeAdmin);
+      $makeAdmin = new Google_Service_Directory_UserMakeAdmin(array(
+        'status' => TRUE
+      ));
+      $service->users->makeAdmin($primaryEmail, $makeAdmin);
 
       return array(
         'domain'    => $domain,
@@ -194,50 +187,4 @@
       );
     }
   }
-
-  class StepSixHandler extends RequestHandler {
-    function post() {
-      $json_data = $this->json_data;
-
-      $service = new Google_Service_Reseller(GoogleClientHelper::GetClient());
-
-      $subscription = new Google_Service_Reseller_Subscription();
-      $subscription->setCustomerId($json_data['domain']);
-      $subscription->setSubscriptionId($json_data['domain'] . "-d20");
-      $subscription->setSkuId(ResellerSKU::GoogleDriveStorage20GB);
-      $subscription->setPurchaseOrderId('G00gl39001');
-
-      $plan = new Google_Service_Reseller_SubscriptionPlan();
-      $plan->setPlanName(ResellerPlanName::FLEXIBLE);
-      $subscription->setPlan($plan);
-
-      $seats = new Google_Service_Reseller_Seats();
-      $seats->setNumberOfSeats(1);
-      $seats->setMaximumNumberOfSeats(1);
-      $subscription->setSeats($seats);
-
-      $renewalSettings = new Google_Service_Reseller_RenewalSettings();
-      $renewalSettings->setRenewalType(ResellerRenewalType::PAY_AS_YOU_GO);
-      $subscription->setRenewalSettings($renewalSettings);
-
-      $service->subscriptions->insert($json_data['domain'], $subscription);
-    }
-  }
-
-  class StepSevenHandler extends RequestHandler {
-    function post() {
-      $json_data = $this->json_data;
-
-      $service = new Google_Service_Licensing(GoogleClientHelper::GetClient());
-
-      $request = new Google_Service_Licensing_LicenseAssignmentInsert();
-      $request->setUserId('admin@' . $json_data['domain']);
-
-      $service->licenseAssignments->insert(
-        ResellerProduct::GoogleDrive,
-        ResellerSKU::GoogleDriveStorage20GB,
-        $request);
-    }
-  }
-
 ?>
