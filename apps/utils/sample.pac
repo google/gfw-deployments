@@ -35,7 +35,7 @@ function FindProxyForURL(url, host) {
 	    isInNet(dnsResolve(host), '64.18.0.0', '255.255.240.0') ||
 	    isInNet(dnsResolve(host), '207.126.144.0', '255.255.240.0') ||
 	    isInNet(dnsResolve(host), '173.194.0.0', '255.255.0.0') ||
-      isInNet(host, '216.58.192.0', '255.255.224.0')) {
+			isInNet(host, '216.58.192.0', '255.255.224.0')) {
 		return "DIRECT";
 	}
  
