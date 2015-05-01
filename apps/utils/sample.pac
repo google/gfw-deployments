@@ -24,6 +24,7 @@ function FindProxyForURL(url, host) {
 	// 64.18.0.0/20 
 	// 207.126.144.0/20 
 	// 173.194.0.0/16
+  // 216.58.192.0/19
 	if (isInNet(dnsResolve(host), '216.239.32.0', '255.255.224.0') ||
 	    isInNet(dnsResolve(host), '64.233.160.0', '255.255.224.0') ||
 	    isInNet(dnsResolve(host), '66.249.80.0', '255.255.240.0') ||
@@ -33,7 +34,8 @@ function FindProxyForURL(url, host) {
 	    isInNet(dnsResolve(host), '74.125.0.0', '255.255.0.0') ||
 	    isInNet(dnsResolve(host), '64.18.0.0', '255.255.240.0') ||
 	    isInNet(dnsResolve(host), '207.126.144.0', '255.255.240.0') ||
-	    isInNet(dnsResolve(host), '173.194.0.0', '255.255.0.0')) {
+	    isInNet(dnsResolve(host), '173.194.0.0', '255.255.0.0') ||
+      isInNet(host, '216.58.192.0', '255.255.224.0')) {
 		return "DIRECT";
 	}
  
