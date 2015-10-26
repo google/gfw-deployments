@@ -234,6 +234,34 @@ def GenerateXOauthString(consumer, xoauth_requestor_id, method, protocol):
     request_url = request_url_base
 
   return '%s %s %s' % (method, request_url, param_list)
+  
+  
+def GetLocalizedLabels(imap_connection):
+  """Gets the ALL MAIL, SPAM and TRASH labels in the correct locale format.
+
+  Args:
+    imap_connection: The imap connection already authenticated
+                     with The Google Mail user.
+
+  Returns:
+    A dictionary with the localized All Mail label in the 'ALL' key,
+    the localized SPAM label in the 'SPAM' key
+    and the localized Trash label in the 'TRASH' key.
+  """
+
+  result, mail_labels = imap_connection.list()
+  all_labels = {}
+  
+  if result == 'OK':
+    for labels in mail_labels:
+      key, label = labels.split(' "/" ')
+      all_labels[key] = label
+  
+  return {
+    'ALL': all_labels['(\\HasNoChildren \\All)'],
+    'TRASH': all_labels['(\\HasNoChildren \\Trash)'],
+    'SPAM': all_labels['(\\HasNoChildren \\Junk)']
+  }
 
 
 def ImapSearch(user, xoauth_string, message_id, query, move, destination_label,
@@ -259,8 +287,8 @@ def ImapSearch(user, xoauth_string, message_id, query, move, destination_label,
   imap_connection.debug = imap_debug
   try:
     imap_connection.authenticate('XOAUTH', lambda x: xoauth_string)
-  except imaplib.IMAP4.error:
-    logging.error('Error authenticating with OAUTH credentials provideds')
+  except imaplib.IMAP4.error as e:
+    logging.error('Error authenticating with OAUTH credentials provided')
     sys.exit()
 
   # Attempt to create the destination label. If it already exists, nothing
@@ -272,7 +300,8 @@ def ImapSearch(user, xoauth_string, message_id, query, move, destination_label,
   # the entire mailbox but luckily Gmail has the "All Mail" folder.
   # We also search for the message in the Spam label since spam messages do not
   # show up in All Mail.
-  labels = ['[Gmail]/All Mail', '[Gmail]/Spam']
+  localized_labels = GetLocalizedLabels(imap_connection)
+  labels = [localized_labels['ALL'], '[Gmail]/Spam']
 
   # Search the labels specified above for the specified message-ID
   for label in labels:
@@ -297,7 +326,7 @@ def ImapSearch(user, xoauth_string, message_id, query, move, destination_label,
                    total_in_label)
 
       if purge.lower() == 'yes':
-        imap_connection.uid('COPY', num, '[Gmail]/' + _LOCALIZED_TRASH)
+        imap_connection.uid('COPY', num, localized_labels['TRASH'])
         imap_connection.expunge()
         logging.info("[%s]   To be purged", user)
       else:
@@ -318,7 +347,7 @@ def ImapSearch(user, xoauth_string, message_id, query, move, destination_label,
     logging.info('[%s] Found %s messages(s) in %s', user, messages_found, label)
 
   if purge.lower() == 'yes':
-    label = '[Gmail]/' + _LOCALIZED_TRASH
+    label = localized_labels['TRASH']
     imap_connection.select(label)
     messages_found = 0
 
