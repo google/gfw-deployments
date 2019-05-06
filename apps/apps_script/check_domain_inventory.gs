@@ -79,7 +79,7 @@ function checkDomainInventory() {
 
 function IsGAppsDomain(domain) {
   var re_match_negative = new RegExp(
-     "you've reached a login page for a domain that isn't using Google Apps");
+     "you've reached a login page for a domain that isn't using G Suite");
   var response = UrlFetchApp.fetch("https://mail.google.com/a/" + domain);
   return(! re_match_negative.test(response.getContentText()));
 }
