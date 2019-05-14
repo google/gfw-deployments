@@ -65,13 +65,13 @@ function checkDomainInventory() {
   for (var i=0; i < values.length; i++) {
     if (IsGAppsDomain(values[i][0])) {
       sheet.getRange(i+1, 2, 1, 1)
-           .setValue("Is Provisioned in GApps")
-           .setBackgroundColor("Green")
+           .setValue("Is Provisioned in G Suite")
+           .setBackground("Green")
            .setFontColor("White");
     } else {
       sheet.getRange(i+1, 2, 1, 1)
-           .setValue("Not Provisioned in GApps")
-           .setBackgroundColor("Red");
+           .setValue("Not Provisioned in G Suite")
+           .setBackground("Red");
     }
   }
 }
