@@ -40,6 +40,10 @@
 //
 //     NOTE: Domains which are unverified Apps domains will appear in this
 //           output as "Not Provisioned in GApps" until the domain is verified.
+//    To make this script run on edit:
+//    - Go to https://script.google.com/home
+//    - Find the script/spreadsheet
+//    - Add a Trigger called "Run on Edit"
 //
 //   To use this script as a function:
 //     Add the function to a cell by entering:
